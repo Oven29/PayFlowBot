@@ -1,0 +1,14 @@
+# enviroment
+venv/
+.env
+# hidden dirs
+.vscode/
+# python cache
+__pycache__/
+*.pyc
+# logs
+logs/
+*.log
+# other
+data/
+test*
