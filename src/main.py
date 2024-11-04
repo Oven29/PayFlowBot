@@ -29,9 +29,7 @@ def start() -> None:
     )
     dp = Dispatcher(storage=MemoryStorage())
     dp.include_routers(
-        *common.routers,
-        *admin.routers,
-        *user.routers,
+        ...
     )
     dp.startup.register(on_startup)
     asyncio.run(dp.start_polling(bot))
