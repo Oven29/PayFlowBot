@@ -6,4 +6,8 @@ migrate:
 
 # create-migration "comment (optional)"
 create-migration:
-	alembic revision --autogenerate -m "$(filter-out $@,$(MAKECMDGOALS))"
+	alembic revision --autogenerate -m "$(msg)"
+
+# Workaround for passing arguments to `make`
+%:
+	@:
