@@ -3,6 +3,7 @@ import ormar
 import sqlalchemy
 
 from src import config
+from .enums import UserRole
 
 
 base_config = ormar.OrmarConfig(
@@ -20,4 +21,11 @@ def create_all() -> None:
 
 
 async def setup() -> None:
+    """Setup database"""
     create_all()
+
+    from .methods.users import get_or_create
+    await get_or_create(
+        user_id=config.OWNER_ID,
+        role=UserRole.OWNER,
+    )
