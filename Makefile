@@ -4,7 +4,7 @@ dev:
 migrate:
 	alembic upgrade head
 
-# create-migration "comment (optional)"
+# create-migration msg="comment (optional)"
 create-migration:
 	alembic revision --autogenerate -m "$(msg)"
 

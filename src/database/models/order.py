@@ -16,8 +16,8 @@ class Order(Model):
     card: str = String(max_length=16)
     created_date: datetime = DateTime(default=datetime.now)
     status: OrderStatus = Enum(enum_class=OrderStatus, default=OrderStatus.CREATED)
-    operator: User = ForeignKey(User, ondelete='CASCADE')
-    provider: Optional[User] = ForeignKey(User, nullable=True, ondelete='CASCADE')
+    operator: User = ForeignKey(User, ondelete='CASCADE', related_name='operator_orders')
+    provider: Optional[User] = ForeignKey(User, nullable=True, ondelete='CASCADE', related_name='provider_orders')
     cancel_reason: Optional[str] = Text(nullable=True)
     dispute_reason: Optional[str] = Text(nullable=True)
 

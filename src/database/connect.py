@@ -14,7 +14,10 @@ base_config = ormar.OrmarConfig(
 
 
 def create_all() -> None:
-    """Create all tables in database if they don't exist"""
+    """Create all tables in database if they don't exist"""    
+    from .models.check import Check
+    from .models.order import Order, RejectOrder
+    from .models.token import IndividualToken
     from .models.user import User
 
     base_config.metadata.create_all(base_config.engine)

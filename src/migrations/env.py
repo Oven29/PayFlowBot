@@ -22,6 +22,9 @@ if config.config_file_name is not None:
 from src.config import DATABASE_URL
 
 # init models
+from src.database.models.check import Check
+from src.database.models.order import Order, RejectOrder
+from src.database.models.token import IndividualToken
 from src.database.models.user import User
 
 from src.database.connect import base_config

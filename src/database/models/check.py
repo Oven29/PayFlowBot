@@ -9,7 +9,7 @@ from ..enums import CheckStatus, OrderBank
 
 
 class Check(Model):
-    ormar_config = base_config.copy(tablename='orders')
+    ormar_config = base_config.copy(tablename='checks')
     id: int = Integer(primary_key=True)
 
     add_date: datetime = DateTime(default=datetime.now)
