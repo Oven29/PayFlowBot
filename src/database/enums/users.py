@@ -7,3 +7,10 @@ class UserRole(str, Enum):
     PROVIDER = 'provider'
     OPERATOR = 'operator'
     MANAGER = 'manager'
+
+
+class UserProviderStatus(str, Enum):
+    NO_PROVIDER = '-'
+    INACTIVE = 'inactive'
+    ACTIVE_INTER = 'inter'
+    ACTIVE_TINK = 'tink'

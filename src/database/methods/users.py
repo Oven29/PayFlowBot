@@ -21,15 +21,15 @@ async def get_or_create(
         Tuple[bool, User]: Created, User
     """
     async with base_config.database:
-        created, user = await User.objects.get_or_create(
+        user, created = await User.objects.get_or_create(
             user_id=user_id,
-            defaults={
+            _defaults={
                 'username': username,
-                'role': role.value,
+                'role': role,
             },
         )
 
-    return created, user
+    return user, created
 
 
 async def get_or_none(user_id: int) -> Optional[User]:
