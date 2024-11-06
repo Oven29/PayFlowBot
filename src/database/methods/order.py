@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 
 from . import user
 from ..connect import base_config
@@ -94,3 +94,37 @@ async def reject(
             provider=provider,
             reason=reason,
         )
+
+
+async def search(
+    status: OrderStatus,
+    search_query: str,
+    offset: int = 0,
+) -> List[Order]:
+    """Search orders
+
+    Args:
+        status (OrderStatus): Order status
+        search_query (str): Search query
+        offset (int, optional): Offset. Defaults to 0.
+
+    Returns:
+        List[Order]: List of orders
+    """
+    async with base_config.database:
+        filter_kwargs = {'status': status}
+        if search_query.strip():
+            filter_kwargs['card__contains'] = search_query
+            filter_kwargs['operator__username__contains'] = search_query
+            filter_kwargs['provider__username__contains'] = search_query
+
+        orders = await Order.objects.select_related([
+            Order.operator, Order.provider, 'checks',
+        ]).filter(**filter_kwargs).offset(offset * 49).limit(49).all()
+
+        if search_query.isdigit():
+            order = await get(order_id=int(search_query))
+            if not order is None:
+                orders.insert(0, order)
+
+        return orders

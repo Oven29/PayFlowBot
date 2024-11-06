@@ -10,6 +10,8 @@ from .order import (
 from .check import CheckStatus
 from .utils import (
     access_type_to_user_role,
+    order_status_to_text,
+    order_bank_to_text,
 )
 
 __all__ = (
@@ -20,4 +22,6 @@ __all__ = (
     OrderStatus,
     CheckStatus,
     access_type_to_user_role,
+    order_status_to_text,
+    order_bank_to_text,
 )

@@ -24,6 +24,7 @@ async def get_by_order(
 async def create(
     amount: float,
     status: CheckStatus,
+    url: str,
     order: Optional[Check] = None,
     order_id: Optional[int] = None,
 ) -> Check:
@@ -32,6 +33,7 @@ async def create(
     Args:
         amount (float): Check amount
         status (CheckStatus): Check status
+        url (str): Check URL
         order (Optional[Check], optional): Check. Defaults to None.
         order_id (Optional[int], optional): Order ID. Defaults to None.
 
@@ -44,6 +46,7 @@ async def create(
 
         return await Check.objects.create(
             amount=amount,
+            url=url,
             order=order,
             status=status,
         )

@@ -16,10 +16,9 @@ class Check(Model):
     amount: float = Float()
     order: Order = ForeignKey(Order, ondelete='CASCADE')
     status: CheckStatus = Enum(enum_class=CheckStatus)
+    url: str = String(max_length=512, nullable=False)
 
     @pydantic.computed_field()
     def bank(self) -> Optional[OrderBank]:
-        try:
+        if self.bank:
             return self.order.bank
-        except:
-            pass

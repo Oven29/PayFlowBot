@@ -11,5 +11,5 @@ class OrderStatus(str, Enum):
     CREATED = 'created'  # новые
     CANCELLED = 'cancelled'  # отмененные
     COMPLETED = 'completed'  # выполненные
-    DISPUTED = 'disputed'  # диспут
+    DISPUTE = 'dispute'  # диспут
     PROCESSING = 'processing'  # в работе

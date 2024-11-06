@@ -7,6 +7,7 @@ import asyncio
 from src import database
 from src import config
 from src.misc.utils import logging_setup, dir_setup
+from src.handlers import common, admin
 
 
 async def on_startup(bot: Bot) -> None:
@@ -29,7 +30,8 @@ def start() -> None:
     )
     dp = Dispatcher(storage=MemoryStorage())
     dp.include_routers(
-        ...
+        *common.routers,
+        *admin.routers,
     )
     dp.startup.register(on_startup)
     asyncio.run(dp.start_polling(bot))

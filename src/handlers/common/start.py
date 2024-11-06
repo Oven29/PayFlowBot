@@ -2,9 +2,7 @@ from aiogram import Bot, Router, F
 from aiogram.filters import CommandStart
 from aiogram.types import Message, CallbackQuery
 from aiogram.fsm.context import FSMContext
-from aiogram.exceptions import TelegramBadRequest
 
-from src import config
 from src.database import db
 from src.database.enums import UserRole, access_type_to_user_role
 from src.keyboards import common as kb
@@ -68,7 +66,7 @@ async def unregistered_start(message: Message, state: FSMContext, bot: Bot) -> N
     await db.user.get_or_create(
         user_id=message.from_user.id,
         username=message.from_user.username,
-        role=access_type_to_user_role(token.access_type),
+        role=access_type_to_user_role[token.access_type],
     )
 
     await message.answer(

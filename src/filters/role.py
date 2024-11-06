@@ -2,8 +2,8 @@ from typing import Tuple
 from aiogram.filters import BaseFilter
 from aiogram.types import TelegramObject
 
-from ..database.enums import UserRole
-from ..database.models import user
+from src.database.enums import UserRole
+from src.database.models import user
 
 
 class RoleFilter(BaseFilter):
