@@ -7,6 +7,7 @@ from .order import (
     OrderBank,
     OrderStatus,
 )
+from .check import CheckStatus
 
 __all__ = (
     UserRole,
@@ -14,4 +15,5 @@ __all__ = (
     AccessType,
     OrderBank,
     OrderStatus,
+    CheckStatus,
 )
