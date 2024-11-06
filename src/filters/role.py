@@ -2,7 +2,7 @@ from aiogram.filters import BaseFilter
 from aiogram.types import TelegramObject
 
 from ..database.enums import UserRole
-from ..database.models import users
+from ..database.models import user
 
 
 class RoleFilter(BaseFilter):
@@ -12,5 +12,5 @@ class RoleFilter(BaseFilter):
         self.role = role
 
     async def __call__(self, event: TelegramObject) -> bool:
-        user = await users.get_or_none(user_id=event.from_user.id)
+        user = await user.get_or_none(user_id=event.from_user.id)
         return user and user.role == self.role.value

@@ -2,7 +2,7 @@ from typing import Optional
 
 from ..connect import base_config
 from ..enums import AccessType
-from ..models.tokens import IndividualToken
+from ..models.token import IndividualToken
 
 
 async def create(

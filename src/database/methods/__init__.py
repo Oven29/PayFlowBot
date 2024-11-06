@@ -1,7 +1,7 @@
 from . import (
-    users,
+    user,
 )
 
 __all__ = (
-    users,
+    user,
 )

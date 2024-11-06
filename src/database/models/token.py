@@ -1,10 +1,9 @@
-from __future__ import annotations
 from datetime import datetime
 from typing import Optional
 from ormar import Integer, Model, String, DateTime, Enum, ForeignKey
 import pydantic
 
-from .users import User
+from .user import User
 from ..connect import base_config
 from ..enums import AccessType
 from src.misc.utils import generate_rand_string
