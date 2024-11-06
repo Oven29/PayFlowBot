@@ -9,7 +9,7 @@ async def get_or_create(
     user_id: int,
     role: UserRole,
     username: Optional[str] = None,
-) -> Tuple[bool, User]:
+) -> Tuple[User, bool]:
     """Get or create user
 
     Args:
