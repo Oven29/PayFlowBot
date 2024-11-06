@@ -1,0 +1,28 @@
+from __future__ import annotations
+from datetime import datetime
+from typing import Optional
+from ormar import Integer, Model, String, DateTime, Enum, ForeignKey
+import pydantic
+
+from .users import User
+from ..connect import base_config
+from ..enums import AccessType
+from src.misc.utils import generate_rand_string
+from src import config
+
+
+class IndividualToken(Model):
+    ormar_config = base_config.copy(tablename='individual_tokens')
+    id: int = Integer(primary_key=True)
+
+    code: str = String(max_length=16, default=lambda: generate_rand_string(16))
+    created_date: datetime = DateTime(default=datetime.now)
+    activate_date: Optional[datetime] = DateTime(nullable=True)
+    user: Optional[User] = ForeignKey(User, nullable=True, ondelete='CASCADE')
+    username: Optional[str] = String(max_length=64, nullable=True)
+    user_id: Optional[int] = Integer(nullable=True)
+    access_type: AccessType = Enum(enum_class=AccessType)
+
+    @pydantic.computed_field()
+    def link(self) -> str:
+        return f'https://t.me/{config.BOT_USERNAME}?start={self.code}'

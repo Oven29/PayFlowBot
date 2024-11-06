@@ -1,8 +1,8 @@
 from typing import Optional, Tuple
 
-from ..models.users import User
 from ..connect import base_config
 from ..enums import UserRole
+from ..models.users import User
 
 
 async def get_or_create(

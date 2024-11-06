@@ -2,8 +2,8 @@ import databases
 import ormar
 import sqlalchemy
 
-from src import config
 from .enums import UserRole
+from src import config
 
 
 base_config = ormar.OrmarConfig(
