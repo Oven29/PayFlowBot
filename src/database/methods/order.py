@@ -57,19 +57,24 @@ async def update(
     order: Optional[Order] = None,
     order_id: Optional[int] = None,
     **kwargs: Dict[str, Any],
-) -> None:
+) -> Order:
     """Update order
 
     Args:
         order (Optional[Order], optional): Order. Defaults to None.
         order_id (Optional[int], optional): Order ID. Defaults to None.
         **kwargs (Dict[str, Any]): Fields to update
+
+    Returns:
+        Order: Updated order
     """
     async with base_config.database:
         if order is None:
             order = await get(id=order_id)
 
         await order.update(**kwargs)
+
+    return order
 
 
 async def reject(
@@ -128,3 +133,15 @@ async def search(
                 orders.insert(0, order)
 
         return orders
+
+
+async def delete(
+    order_id: int,
+) -> None:
+    """Delete order
+
+    Args:
+        order_id (int): Order ID
+    """
+    async with base_config.database:
+        await Order.objects.filter(id=order_id).delete()

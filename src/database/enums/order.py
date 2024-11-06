@@ -10,6 +10,6 @@ class OrderBank(str, Enum):
 class OrderStatus(str, Enum):
     CREATED = 'created'  # новые
     CANCELLED = 'cancelled'  # отмененные
-    COMPLETED = 'completed'  # выполненные
+    COMPLETED = 'completed'  # выполненные (обработанные)
     DISPUTE = 'dispute'  # диспут
     PROCESSING = 'processing'  # в работе

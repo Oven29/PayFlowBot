@@ -4,16 +4,16 @@ from aiogram.types import Message, CallbackQuery
 from aiogram.fsm.context import FSMContext
 
 from src.database import db
-from src.database.enums import UserRole, access_type_to_user_role
+from src.database.enums import access_type_to_user_role
 from src.keyboards import common as kb
-from src.filters.role import RoleFilter
+from src.filters.role import AdminFilter, OperatorFilter, ProviderFilter
 
 
 router = Router(name=__name__)
 
 
-@router.message(CommandStart(), RoleFilter(UserRole.OWNER, UserRole.ADMIN))
-@router.callback_query(F.data.in_({'cancel', 'main-menu'}), RoleFilter(UserRole.OWNER, UserRole.ADMIN))
+@router.message(CommandStart(), AdminFilter())
+@router.callback_query(F.data.in_({'cancel', 'main-menu'}), AdminFilter())
 async def admin_menu(event: Message | CallbackQuery, state: FSMContext) -> None:
     await state.clear()
     message = event if isinstance(event, Message) else event.message
@@ -23,8 +23,8 @@ async def admin_menu(event: Message | CallbackQuery, state: FSMContext) -> None:
     )
 
 
-@router.message(CommandStart(), RoleFilter(UserRole.OPERATOR))
-@router.callback_query(F.data.in_({'cancel', 'main-menu'}), RoleFilter(UserRole.OPERATOR))
+@router.message(CommandStart(), OperatorFilter())
+@router.callback_query(F.data.in_({'cancel', 'main-menu'}), OperatorFilter())
 async def operator_menu(event: Message | CallbackQuery, state: FSMContext) -> None:
     await state.clear()
     message = event if isinstance(event, Message) else event.message
@@ -34,8 +34,8 @@ async def operator_menu(event: Message | CallbackQuery, state: FSMContext) -> No
     )
 
 
-@router.message(CommandStart(), RoleFilter(UserRole.PROVIDER))
-@router.callback_query(F.data.in_({'cancel', 'main-menu'}), RoleFilter(UserRole.PROVIDER))
+@router.message(CommandStart(), ProviderFilter())
+@router.callback_query(F.data.in_({'cancel', 'main-menu'}), ProviderFilter())
 async def provider_menu(event: Message | CallbackQuery, state: FSMContext) -> None:
     await state.clear()
     message = event if isinstance(event, Message) else event.message
