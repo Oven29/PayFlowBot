@@ -5,7 +5,7 @@ from src.database.enums import OrderStatus, order_status_to_text
 
 
 orders_menu = InlineKeyboardMarkup(inline_keyboard=[
-    [InlineKeyboardButton(text=text, switch_inline_query_current_chat=f'order_{status.value} ')]
+    [InlineKeyboardButton(text=text, switch_inline_query_current_chat=f'order {status.value} ')]
     for status, text in order_status_to_text.items()
 ] + [in_menu_btn])
 
@@ -47,5 +47,13 @@ def edit_order(order_id: int) -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(inline_keyboard=[
         [InlineKeyboardButton(text='Сумму заявки', callback_data=f'edit-amount-order {order_id}')],
         [InlineKeyboardButton(text='Карту', callback_data=f'edit-card-order {order_id}')],
-        cancel_btn,
+        [InlineKeyboardButton(text='🔙 Назад', callback_data=f'order-menu {order_id}')],
+        in_menu_btn,
+    ])
+
+
+def confirm_delete(order_id: int) -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text='❗ Да, удалить', callback_data=f'confirm-delete-order {order_id}')],
+        [InlineKeyboardButton(text='Отменить действие', callback_data=f'order-menu {order_id}')],
     ])

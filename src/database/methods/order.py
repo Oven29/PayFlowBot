@@ -102,14 +102,14 @@ async def reject(
 
 
 async def search(
-    status: OrderStatus,
+    status: OrderStatus | None,
     search_query: str,
     offset: int = 0,
 ) -> List[Order]:
     """Search orders
 
     Args:
-        status (OrderStatus): Order status
+        status (OrderStatus | None): Order status
         search_query (str): Search query
         offset (int, optional): Offset. Defaults to 0.
 
@@ -117,7 +117,9 @@ async def search(
         List[Order]: List of orders
     """
     async with base_config.database:
-        filter_kwargs = {'status': status}
+        filter_kwargs = {}
+        if not status is None:
+            filter_kwargs['status'] = status
         if search_query.strip():
             filter_kwargs['card__contains'] = search_query
             filter_kwargs['operator__username__contains'] = search_query
