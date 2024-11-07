@@ -1,10 +1,10 @@
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
 
-cancel_btn = InlineKeyboardButton('❌ Отмена', callback_data='cancel')
+cancel_btn = InlineKeyboardButton(text='❌ Отмена', callback_data='cancel')
 cancel = InlineKeyboardMarkup(inline_keyboard=[[cancel_btn]])
 
-in_menu_btn = InlineKeyboardButton('🔝 В меню', callback_data='main-menu')
+in_menu_btn = InlineKeyboardButton(text='🔝 В меню', callback_data='main-menu')
 in_menu = InlineKeyboardMarkup(inline_keyboard=[[in_menu_btn]])
 
 admin_menu = InlineKeyboardMarkup(inline_keyboard=[

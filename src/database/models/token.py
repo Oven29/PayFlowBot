@@ -28,6 +28,6 @@ class IndividualToken(Model):
 
     def check_available(self, user_id: int, username: str | None) -> bool:
         "Check if token is available for user"
-        return self.user is None and\
-              (self.user_id is None or self.user_id == user_id) and\
+        return self.user is None and \
+              (self.user_id is None or self.user_id == user_id) and \
               (self.username is None or self.username == username)

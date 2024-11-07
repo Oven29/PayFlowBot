@@ -61,11 +61,14 @@ async def unregistered_start(message: Message, state: FSMContext, bot: Bot) -> N
             text='Ссылка недействительна',
         )
 
-    await db.user.get_or_create(
+    user, created = await db.user.get_or_create(
         user_id=message.from_user.id,
         username=message.from_user.username,
         role=access_type_to_user_role[token.access_type],
     )
+
+    if created:
+        await db.token.close(token=token, user=user)
 
     await message.answer(
         text='Добро пожаловать в бота!\nНажмите /start для открытия меню',

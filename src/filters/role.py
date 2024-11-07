@@ -10,7 +10,7 @@ class RoleFilter(BaseFilter):
     """Filter by role"""
 
     def __init__(self, *roles: Tuple[UserRole]) -> None:
-        self.roles = roles
+        self.roles = tuple(type(role) for role in roles)
 
     async def __call__(self, event: TelegramObject) -> bool:
         user = await db.user.get(user_id=event.from_user.id)

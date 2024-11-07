@@ -9,7 +9,7 @@ from src.database.enums import UserRole, user_role_to_text, user_role_to_access_
 from src.keyboards import admin as kb
 from src.filters.common import amount_filter, number_filter
 from src.filters.role import AdminFilter
-from src.states.admin import AddParticipantState, EditOrderState
+from src.states.admin import AddParticipantState, EditParticipantState
 from src.utils.edit_message import EditMessage
 from src.utils.other import generate_rand_string
 
@@ -151,7 +151,7 @@ async def edit_participant_commission(call: CallbackQuery, state: FSMContext) ->
     _, user_pk = call.data.split()
     user = await db.user.get(user_pk=int(user_pk))
     await state.update_data(user_pk=user.id)
-    await state.set_state(EditOrderState.commission)
+    await state.set_state(EditParticipantState.commission)
 
     await EditMessage(call)(
         text=f'{user.message}\n\n<b>Изменение комиссии</b>\n<i>Укажите новую комиссию</i>',
@@ -159,7 +159,7 @@ async def edit_participant_commission(call: CallbackQuery, state: FSMContext) ->
     )
 
 
-@router.message(amount_filter, EditOrderState.commission)
+@router.message(amount_filter, EditParticipantState.commission)
 async def set_participant_commission(message: Message, state: FSMContext) -> None:
     data = await state.get_data()
     await state.clear()
@@ -179,7 +179,7 @@ async def edit_participant_balance(call: CallbackQuery, state: FSMContext) -> No
     _, user_pk = call.data.split()
     user = await db.user.get(user_pk=int(user_pk))
     await state.update_data(user_pk=user.id)
-    await state.set_state(EditOrderState.balance)
+    await state.set_state(EditParticipantState.balance)
 
     await EditMessage(call)(
         text=f'{user.message}\n\n<b>Изменение баланса</b>\n<i>Укажите новый баланс</i>',
@@ -187,7 +187,7 @@ async def edit_participant_balance(call: CallbackQuery, state: FSMContext) -> No
     )
 
 
-@router.message(number_filter, EditOrderState.balance)
+@router.message(number_filter, EditParticipantState.balance)
 async def set_participant_balance(message: Message, state: FSMContext) -> None:
     data = await state.get_data()
     await state.clear()

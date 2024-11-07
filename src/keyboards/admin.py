@@ -10,7 +10,7 @@ orders_menu = InlineKeyboardMarkup(inline_keyboard=[
     [InlineKeyboardButton(text=text, switch_inline_query_current_chat=f'order {status.value} ')]
       for status, text in order_status_to_text.items()
 ] + [
-    [InlineKeyboardButton(text='🔙 Назад', callback_data='admin orders'), in_menu_btn],
+    [InlineKeyboardButton(text='🔙 Назад', callback_data='main-menu')],
 ])
 
 

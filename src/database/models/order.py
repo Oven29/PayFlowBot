@@ -30,8 +30,7 @@ class Order(Model):
     def description(self) -> str:
         res = f'{order_bank_to_text[self.bank]} на {self.amount} "{self.card}" от {self.created_date} '
         if self.provider and self.operator:
-            res += f'провайдер - {self.provider.username or self.provider.user_id} ' \
-                f'оператор - {self.operator.username or self.operator.user_id}'
+            res += f'провайдер - {self.provider.title} оператор - {self.operator.title}'
         return res
 
     @pydantic.computed_field()

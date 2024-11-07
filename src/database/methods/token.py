@@ -1,8 +1,10 @@
+from datetime import datetime
 from typing import Optional
 
 from ..connect import base_config
 from ..enums import AccessType
 from ..models.token import IndividualToken
+from ..models.user import User
 
 
 async def create(
@@ -39,3 +41,20 @@ async def get_by_code(code: str) -> Optional[IndividualToken]:
     """
     async with base_config.database:
         return await IndividualToken.objects.get_or_none(code=code)
+
+
+async def close(
+    token: IndividualToken,
+    user: User,
+) -> None:
+    """Close token
+
+    Args:
+        token (IndividualToken): Token
+        user (User): User
+    """
+    async with base_config.database:
+        await token.update(
+            activate_date=datetime.now(),
+            user=user,
+        )
