@@ -1,7 +1,8 @@
 from aiogram import Dispatcher, Bot
-from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
+from aiogram.fsm.storage.memory import MemoryStorage
+from aiogram.types import BotCommand
 import asyncio
 
 from src import database
@@ -14,6 +15,10 @@ async def on_startup(bot: Bot) -> None:
     # getting info about bot
     await database.setup()
     config.BOT_USERNAME = (await bot.get_me()).username
+    
+    await bot.set_my_commands([
+        BotCommand(command='/start', description='Открыть меню'),
+    ])
     # starting bot polling~
     await bot.delete_webhook(drop_pending_updates=True)
 

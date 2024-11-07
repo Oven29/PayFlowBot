@@ -112,7 +112,7 @@ async def participant_inline(query: InlineQuery, state: FSMContext) -> None:
             description=user.description,
             reply_markup=kb.user_el(user.id, user.role),
         ) for user in users],
-        cache_time=30,
+        cache_time=5,
         is_personal=True,
         next_offset=offset + 1 if len(users) >= 49 else None,
     )

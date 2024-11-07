@@ -55,7 +55,7 @@ async def order_inline(query: InlineQuery) -> None:
             description=order.description,
             reply_markup=kb.order_el(order.id, order.status),
         ) for order in orders],
-        cache_time=30,
+        cache_time=5,
         is_personal=True,
         next_offset=offset + 1 if len(orders) >= 49 else None,
     )
