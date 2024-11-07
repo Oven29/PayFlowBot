@@ -6,6 +6,7 @@ from aiogram.fsm.context import FSMContext
 from src.database import db
 from src.database.enums import access_type_to_user_role
 from src.keyboards import common as kb
+from src.misc.utils import EditMessage
 from src.filters.role import AdminFilter, OperatorFilter, ProviderFilter
 
 
@@ -16,8 +17,7 @@ router = Router(name=__name__)
 @router.callback_query(F.data.in_({'cancel', 'main-menu'}), AdminFilter())
 async def admin_menu(event: Message | CallbackQuery, state: FSMContext) -> None:
     await state.clear()
-    message = event if isinstance(event, Message) else event.message
-    await message.answer(
+    await EditMessage(event)(
         text='Меню администратора',
         reply_markup=kb.admin_menu,
     )
@@ -27,8 +27,7 @@ async def admin_menu(event: Message | CallbackQuery, state: FSMContext) -> None:
 @router.callback_query(F.data.in_({'cancel', 'main-menu'}), OperatorFilter())
 async def operator_menu(event: Message | CallbackQuery, state: FSMContext) -> None:
     await state.clear()
-    message = event if isinstance(event, Message) else event.message
-    await message.answer(
+    await EditMessage(event)(
         text='Меню оператора',
         reply_markup=kb.operator_menu,
     )
@@ -38,8 +37,7 @@ async def operator_menu(event: Message | CallbackQuery, state: FSMContext) -> No
 @router.callback_query(F.data.in_({'cancel', 'main-menu'}), ProviderFilter())
 async def provider_menu(event: Message | CallbackQuery, state: FSMContext) -> None:
     await state.clear()
-    message = event if isinstance(event, Message) else event.message
-    await message.answer(
+    await EditMessage(event)(
         text='Меню провайдера',
         reply_markup=kb.provider_menu,
     )

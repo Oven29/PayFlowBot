@@ -6,6 +6,7 @@ from string import hexdigits
 from typing import Any, Dict
 
 from aiogram import Bot
+from aiogram.types import CallbackQuery, Message
 from aiogram.client.default import DefaultBotProperties
 
 from src import config
@@ -65,3 +66,20 @@ class UseBot:
         Close Bot instance.
         """
         await self._instance.close()
+
+
+class EditMessage:
+    """
+    Support class for edit message text
+    """
+    def __init__(self, event: CallbackQuery | Message) -> None:
+        self.message = event if isinstance(event, Message) else event.message
+
+    async def __call__(self, *args: Any, **kwds: Any) -> Message:
+        if self.message.from_user.username != config.BOT_USERNAME:
+            return await self.message.answer(*args, **kwds)
+
+        if self.message.text:
+            return await self.message.edit_text(*args, **kwds)
+
+        return await self.message.edit_caption(*args, **kwds)

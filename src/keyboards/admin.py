@@ -5,9 +5,13 @@ from src.database.enums import OrderStatus, order_status_to_text
 
 
 orders_menu = InlineKeyboardMarkup(inline_keyboard=[
+    [InlineKeyboardButton(text='🔍 Поиск по всем заявкам', switch_inline_query_current_chat='order ')],
+] + [
     [InlineKeyboardButton(text=text, switch_inline_query_current_chat=f'order {status.value} ')]
-    for status, text in order_status_to_text.items()
-] + [in_menu_btn])
+      for status, text in order_status_to_text.items()
+] + [
+    in_menu_btn,
+])
 
 
 def order_el(order_id: int, status: OrderStatus) -> InlineKeyboardMarkup:

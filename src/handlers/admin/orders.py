@@ -5,11 +5,11 @@ from aiogram.types import Message, CallbackQuery, InlineQuery, \
 from aiogram.fsm.context import FSMContext
 
 from src.database import db
-from src.database.enums import UserRole, OrderStatus, order_status_to_text
+from src.database.enums import OrderStatus, order_status_to_text
 from src.keyboards import admin as kb
 from src.filters.role import AdminFilter
 from src.filters.common import amount_filter, card_filter
-from src.misc.utils import generate_rand_string
+from src.misc.utils import generate_rand_string, EditMessage
 from src.states.admin import EditOrderState
 
 
@@ -20,7 +20,7 @@ router.callback_query.filter(AdminFilter())
 
 @router.callback_query(F.data == 'admin orders')
 async def admin_orders_menu(call: CallbackQuery) -> None:
-    await call.message.edit_text(
+    await EditMessage(call)(
         text='Выберите тип заявки',
         reply_markup=kb.orders_menu,
     )
@@ -64,7 +64,7 @@ async def order_menu(call: CallbackQuery, state: FSMContext) -> None:
     _, order_id = call.data.split()
     order = await db.order.get(order_id=int(order_id))
 
-    await call.message.edit_text(
+    await EditMessage(call)(
         text=order.message,
         reply_markup=kb.order_el(order.id, order.status),
     )
@@ -89,7 +89,7 @@ async def delete_order(call: CallbackQuery) -> None:
     _, order_id = call.data.split()
     order = await db.order.get(order_id=int(order_id))
 
-    await call.message.edit_text(
+    await EditMessage(call)(
         text=f'{order.message}\n\n<b>❗❗Подтвердите удаление заявки\nВсе, связанные с ней данные будут удалены!</b>',
         reply_markup=kb.confirm_delete(order.id),
     )
@@ -100,7 +100,7 @@ async def confirm_delete_order(call: CallbackQuery) -> None:
     _, order_id = call.data.split()
     await db.order.delete(order_id=int(order_id))
 
-    await call.message.edit_text(
+    await EditMessage(call)(
         text=f'Заявка <b>№{order_id}</b> удалена',
         reply_markup=kb.in_menu,
     )
@@ -111,7 +111,7 @@ async def edit_order(call: CallbackQuery) -> None:
     _, order_id = call.data.split()
     order = await db.order.get(order_id=int(order_id))
 
-    await call.message.edit_text(
+    await EditMessage(call)(
         text=f'{order.message}\n\n<b>Изменение заявки</b>\n<i>Выберите, что хотите изменить</i>',
         reply_markup=kb.edit_order(order.id),
     )
@@ -124,7 +124,7 @@ async def edit_order_amount(call: CallbackQuery, state: FSMContext) -> None:
     await state.set_state(EditOrderState.amount)
     await state.update_data(order_id=order.id)
 
-    await call.message.edit_text(
+    await EditMessage(call)(
         text=f'{order.message}\n\n<b>Изменение суммы заявки</b>\n<i>Укажите новую сумму</i>',
         reply_markup=kb.cancel,
     )
@@ -152,7 +152,7 @@ async def edit_order_card(call: CallbackQuery, state: FSMContext) -> None:
     await state.set_state(EditOrderState.card)
     await state.update_data(order_id=order.id)
 
-    await call.message.edit_text(
+    await EditMessage(call)(
         text=f'{order.message}\n\n<b>Изменение карты заявки</b>\n<i>Укажите новую карту</i>',
         reply_markup=kb.cancel,
     )
