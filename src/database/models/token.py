@@ -6,7 +6,7 @@ import pydantic
 from .user import User
 from ..connect import base_config
 from ..enums import AccessType
-from src.misc.utils import generate_rand_string
+from src.utils.other import generate_rand_string
 from src import config
 
 

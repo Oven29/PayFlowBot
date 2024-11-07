@@ -6,7 +6,7 @@ from aiogram.fsm.context import FSMContext
 from src.database import db
 from src.database.enums import access_type_to_user_role
 from src.keyboards import common as kb
-from src.misc.utils import EditMessage
+from src.utils.edit_message import EditMessage
 from src.filters.role import AdminFilter, OperatorFilter, ProviderFilter
 
 

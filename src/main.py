@@ -6,7 +6,7 @@ import asyncio
 
 from src import database
 from src import config
-from src.misc.utils import logging_setup, dir_setup
+from src.utils.setup import logging_setup, dir_setup
 from src.handlers import common, admin
 
 

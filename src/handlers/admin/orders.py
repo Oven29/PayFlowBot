@@ -9,7 +9,8 @@ from src.database.enums import OrderStatus, order_status_to_text
 from src.keyboards import admin as kb
 from src.filters.role import AdminFilter
 from src.filters.common import amount_filter, card_filter
-from src.misc.utils import generate_rand_string, EditMessage
+from src.utils.edit_message import EditMessage
+from src.utils.other import generate_rand_string
 from src.states.admin import EditOrderState
 
 
