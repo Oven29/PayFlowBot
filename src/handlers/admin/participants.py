@@ -164,13 +164,13 @@ async def edit_participant_commission(call: CallbackQuery, state: FSMContext) ->
     )
 
 
-@router.message(amount_filter, EditParticipantState.commission)
+@router.message(number_filter, EditParticipantState.commission)
 async def set_participant_commission(message: Message, state: FSMContext) -> None:
     data = await state.get_data()
     await state.clear()
     user = await db.user.update(
         user_pk=data['user_pk'],
-        commission=float(message.text),
+        commission=int(message.text),
     )
 
     await message.answer(
@@ -198,7 +198,7 @@ async def set_participant_balance(message: Message, state: FSMContext) -> None:
     await state.clear()
     user = await db.user.update(
         user_pk=data['user_pk'],
-        balance=message.text,
+        balance=int(message.text),
     )
 
     await message.answer(
