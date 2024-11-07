@@ -1,4 +1,4 @@
-from typing import List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 from ..connect import base_config
 from ..enums import UserRole
@@ -99,3 +99,24 @@ async def delete(
 
     async with base_config.database:
         await User.objects.filter(**filters).delete()
+
+
+async def update(
+    user_id: Optional[int] = None,
+    user_pk: Optional[int] = None,
+    **kwargs: Dict[str, Any],
+) -> User:
+    """Update user
+
+    Args:
+        user_id (Optional[int]): User Telegram ID. Defaults to None.
+        user_pk (Optional[int], optional): User ID. Defaults to None.
+
+    Returns:
+        User: Updated user
+    """
+    async with base_config.database:
+        user = await get(user_id=user_id, user_pk=user_pk)
+        await user.update(**kwargs)
+    
+    return user

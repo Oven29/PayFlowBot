@@ -7,8 +7,9 @@ from aiogram.fsm.context import FSMContext
 from src.database import db
 from src.database.enums import UserRole, user_role_to_text, user_role_to_access_type
 from src.keyboards import admin as kb
+from src.filters.common import amount_filter, number_filter
 from src.filters.role import AdminFilter
-from src.states.admin import AddParticipantState
+from src.states.admin import AddParticipantState, EditOrderState
 from src.utils.edit_message import EditMessage
 from src.utils.other import generate_rand_string
 
@@ -28,7 +29,7 @@ async def add_participant_menu(call: CallbackQuery) -> None:
 
 @router.callback_query(F.data.startswith('add-participant'))
 async def add_participant(call: CallbackQuery, state: FSMContext) -> None:
-    _, role = call.data.split()
+    _, role = call.data.split() 
     await state.update_data(role=role)
     await state.set_state(AddParticipantState.input)
 
@@ -39,7 +40,7 @@ async def add_participant(call: CallbackQuery, state: FSMContext) -> None:
     )
 
 
-@router.message(AddParticipantState.input, F.text)
+@router.message(F.text, AddParticipantState.input)
 async def add_participant_input(message: Message, state: FSMContext) -> None:
     user_id = None
     username = None
@@ -114,8 +115,8 @@ async def participant_inline(query: InlineQuery, state: FSMContext) -> None:
 
 @router.callback_query(F.data.startswith('participant-menu'))
 async def participant_menu(call: CallbackQuery) -> None:
-    _, user_id = call.data.split()
-    user = await db.user.get_by_pk(user_pk=int(user_id))
+    _, user_pk = call.data.split()
+    user = await db.user.get(user_pk=int(user_pk))
 
     await EditMessage(call)(
         text=user.message,
@@ -141,5 +142,61 @@ async def confirm_delete_participant(call: CallbackQuery) -> None:
 
     await EditMessage(call)(
         text=f'Пользователь удален',
+        reply_markup=kb.in_menu,
+    )
+
+
+@router.callback_query(F.data.startswith('edit-participant-commission'))
+async def edit_participant_commission(call: CallbackQuery, state: FSMContext) -> None:
+    _, user_pk = call.data.split()
+    user = await db.user.get(user_pk=int(user_pk))
+    await state.update_data(user_pk=user.id)
+    await state.set_state(EditOrderState.commission)
+
+    await EditMessage(call)(
+        text=f'{user.message}\n\n<b>Изменение комиссии</b>\n<i>Укажите новую комиссию</i>',
+        reply_markup=kb.cancel,
+    )
+
+
+@router.message(amount_filter, EditOrderState.commission)
+async def set_participant_commission(message: Message, state: FSMContext) -> None:
+    data = await state.get_data()
+    await state.clear()
+    user = await db.user.update(
+        user_pk=data['user_pk'],
+        commission=float(message.text),
+    )
+
+    await message.answer(
+        text=f'Комиссия пользователя <b>{user.title}</b> изменена на <code>{message.text}</code>',
+        reply_markup=kb.in_menu,
+    )
+
+
+@router.callback_query(F.data.startswith('edit-participant-balance'))
+async def edit_participant_balance(call: CallbackQuery, state: FSMContext) -> None:
+    _, user_pk = call.data.split()
+    user = await db.user.get(user_pk=int(user_pk))
+    await state.update_data(user_pk=user.id)
+    await state.set_state(EditOrderState.balance)
+
+    await EditMessage(call)(
+        text=f'{user.message}\n\n<b>Изменение баланса</b>\n<i>Укажите новый баланс</i>',
+        reply_markup=kb.cancel,
+    )
+
+
+@router.message(number_filter, EditOrderState.balance)
+async def set_participant_balance(message: Message, state: FSMContext) -> None:
+    data = await state.get_data()
+    await state.clear()
+    user = await db.user.update(
+        user_pk=data['user_pk'],
+        balance=message.text,
+    )
+
+    await message.answer(
+        text=f'Баланс пользователя <b>{user.title}</b> изменен на <code>{message.text}</code>',
         reply_markup=kb.in_menu,
     )
