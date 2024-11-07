@@ -1,4 +1,5 @@
 import hashlib
+import logging
 from aiogram import Router, F
 from aiogram.types import Message, CallbackQuery, InlineQuery, \
     InlineQueryResultArticle, InputTextMessageContent
@@ -18,6 +19,8 @@ router = Router(name=__name__)
 router.message.filter(AdminFilter())
 router.callback_query.filter(AdminFilter())
 
+logger = logging.getLogger(__name__)
+
 
 @router.callback_query(F.data == 'admin orders')
 async def admin_orders_menu(call: CallbackQuery) -> None:
@@ -32,11 +35,10 @@ async def order_inline(query: InlineQuery) -> None:
     try:
         _, status, *search_query = query.query.split()
     except ValueError:
+        logger.warning(f'Invalid query: "{query.query}"')
         return
 
     offset = query.offset or 0
-    if not status in OrderStatus._value2member_map_:
-        search_query = (status, *search_query)
     orders = await db.order.search(
         status=OrderStatus._value2member_map_.get(status),
         search_query=' '.join(search_query),

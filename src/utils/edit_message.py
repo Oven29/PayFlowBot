@@ -1,7 +1,9 @@
+import logging
 from typing import Any
 from aiogram.types import CallbackQuery, Message
 
-from src import config
+
+logger = logging.getLogger(__name__)
 
 
 class EditMessage:
@@ -9,13 +11,20 @@ class EditMessage:
     Support class for edit message text
     """
     def __init__(self, event: CallbackQuery | Message) -> None:
-        self.message = event if isinstance(event, Message) else event.message
+        self.bot = event.bot
+        self.default_kwds = {'chat_id': event.from_user.id}
 
-    async def __call__(self, *args: Any, **kwds: Any) -> Message:
-        if self.message.from_user.username != config.BOT_USERNAME:
-            return await self.message.answer(*args, **kwds)
+        if isinstance(event, Message):
+            self.default_kwds['message_id'] = event.message_id
+        elif event.inline_message_id:
+            self.default_kwds['inline_message_id'] = event.inline_message_id
+        else:
+            self.default_kwds['message_id'] = event.message.message_id
 
-        if self.message.text:
-            return await self.message.edit_text(*args, **kwds)
+    async def __call__(self, **kwds: Any) -> Message:
+        try:
+            return await self.bot.edit_message_text(**kwds, **self.default_kwds)
 
-        return await self.message.edit_caption(*args, **kwds)
+        except Exception as e:
+            logger.warning(f'Error when editing message - {e}')
+            await self.bot.send_message(**kwds, chat_id=self.default_kwds['chat_id'])

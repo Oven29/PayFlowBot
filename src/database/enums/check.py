@@ -2,7 +2,7 @@ from enum import Enum
 
 
 class CheckStatus(str, Enum):
-    OK = 'ok'
-    UNDERKPAYMENT = 'underpay'
-    OVERPAYMENT = 'overpay'
-    ERROR = 'error'
+    OK = 'OK'
+    UNDERKPAYMENT = 'UNDERKPAYMENT'
+    OVERPAYMENT = 'OVERPAYMENT'
+    ERROR = 'ERROR'

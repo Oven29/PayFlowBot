@@ -1,4 +1,5 @@
 import hashlib
+import logging
 from aiogram import Router, F
 from aiogram.types import Message, CallbackQuery, InlineQuery, \
     InlineQueryResultArticle, InputTextMessageContent
@@ -17,6 +18,16 @@ from src.utils.other import generate_rand_string
 router = Router(name=__name__)
 router.message.filter(AdminFilter())
 router.callback_query.filter(AdminFilter())
+
+logger = logging.getLogger(__name__)
+
+
+@router.callback_query(F.data == 'admin participants')
+async def admin_participants(call: CallbackQuery) -> None:
+    await EditMessage(call)(
+        text='Участники',
+        reply_markup=kb.participants_menu,
+    )
 
 
 @router.callback_query(F.data == 'add-participant-menu')
@@ -51,11 +62,6 @@ async def add_participant_input(message: Message, state: FSMContext) -> None:
         username = message.text[1:]
     elif message.text != '-':
         username = message.text
-    else:
-        return await message.answer(
-            text='Некорректный ввод',
-            reply_markup=kb.cancel,
-        )
 
     data = await state.get_data()
     await state.clear()
@@ -67,8 +73,8 @@ async def add_participant_input(message: Message, state: FSMContext) -> None:
     )
 
     await message.answer(
-        text=f'<code>{token.link}</code>\n\n<i>Отправьте пользователю эту ссылку, '
-            f'чтобы назначить его <b>{user_role_to_text[user_role]}</b></i>\n\n'
+        text=f'<pre><code>{token.link}</code></pre>\n\n'  # <pre><code>{token.code}</code></pre>\n\n'
+            f'<i>Отправьте пользователю ссылку или код, чтобы назначить его <b>{user_role_to_text[user_role]}</b></i>\n\n'
             '/start - Вернуться в меню',
     )
 
@@ -86,12 +92,11 @@ async def participant_inline(query: InlineQuery, state: FSMContext) -> None:
     try:
         _, role, *search_query = query.query.split()
     except ValueError:
+        logger.warning(f'Invalid query: "{query.query}"')
         return
 
     offset = query.offset or 0
-    if not role in UserRole._value2member_map_:
-        search_query = (role, *search_query)
-    users = await db.order.search(
+    users = await db.user.search(
         role=UserRole._value2member_map_.get(role),
         search_query=' '.join(search_query),
         offset=offset,

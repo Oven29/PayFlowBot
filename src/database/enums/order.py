@@ -2,14 +2,14 @@ from enum import Enum
 
 
 class OrderBank(str, Enum):
-    TINK = 'tink'
-    TINK_SBP = 'tink_sbp'
-    INTER = 'inter'
+    TINK = 'TINK'
+    TINK_SBP = 'TINK_SBP'
+    INTER = 'INTER'
 
 
 class OrderStatus(str, Enum):
-    CREATED = 'created'  # новые
-    CANCELLED = 'cancelled'  # отмененные
-    COMPLETED = 'completed'  # выполненные (обработанные)
-    DISPUTE = 'dispute'  # диспут
-    PROCESSING = 'processing'  # в работе
+    CREATED = 'CREATED'  # новые
+    CANCELLED = 'CANCELLED'  # отмененные
+    COMPLETED = 'COMPLETED'  # выполненные (обработанные)
+    DISPUTE = 'DISPUTE'  # диспут
+    PROCESSING = 'PROCESSING'  # в работе

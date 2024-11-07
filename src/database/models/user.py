@@ -28,7 +28,7 @@ class User(Model):
     @pydantic.computed_field()
     def description(self) -> str:
         res = f'Роль: {user_role_to_text[self.role]} Дата регитсрации: {self.reg_date}'
-        if isinstance(self.role, (UserRole.OPERATOR, UserRole.PROVIDER)):
+        if self.role in (UserRole.OPERATOR, UserRole.PROVIDER):
             res += f' Баланс: {self.balance} Комиссия: {self.commission}'
         return res
 
@@ -37,15 +37,17 @@ class User(Model):
         res = f'<b>Пользователь {self.title}</b>\n\n' \
             f'<b>Дата регистрации:</b> <code>{self.reg_date}</code>'
 
-        # for provider and operator
+        if self.role in (UserRole.OPERATOR, UserRole.PROVIDER):
+            res += f'\n<b>Комиссия:</b> {self.commission}\n' \
+                f'<b>Текущий баланс:</b> {self.balance}'
+
         orders = getattr(self, f'{self.role.value}_orders', None)
         if not orders:
             return res
-        completed_orders = [el for el in orders if isinstance(el.status, OrderStatus.COMPLETED)]
-        canceled_orders = [el for el in orders if isinstance(el.status, OrderStatus.CANCELED)]
+        completed_orders = [el for el in orders if el.status is OrderStatus.COMPLETED]
+        canceled_orders = [el for el in orders if el.status is OrderStatus.CANCELLED]
 
-        return f'{res}\n<b>Комиссия:</b> {self.commission}\n' \
-            f'<b>Текущий баланс:</b> {self.balance}\n' \
+        return f'{res}\n' \
             f'<b>Кол-во обработанных заявок:</b> {len(completed_orders)}\n' \
             f'<b>Кол-во отменённых заявок:</b> {len(canceled_orders)}\n' \
             f'<b>Общий объём обработанных денег:</b> {sum(el.amount for el in completed_orders)}'

@@ -17,22 +17,22 @@ orders_menu = InlineKeyboardMarkup(inline_keyboard=[
 def order_el(order_id: int, status: OrderStatus) -> InlineKeyboardMarkup:
     keyboard = []
 
-    if isinstance(status, OrderStatus.CANCELLED):
+    if status is OrderStatus.CANCELLED:
         keyboard.append([InlineKeyboardButton(
             text='Перенести в новые',
             callback_data=f'move-order created {order_id}',
         )])
-    if isinstance(status, OrderStatus.DISPUTE):
+    if status is OrderStatus.DISPUTE:
         keyboard.append([InlineKeyboardButton(
             text='Перенести в обработанные',
             callback_data=f'move-order completed {order_id}',
         )])
-    if isinstance(status, (OrderStatus.CREATED, OrderStatus.COMPLETED)):
+    if status in (OrderStatus.CREATED, OrderStatus.COMPLETED):
         keyboard.append([InlineKeyboardButton(
             text='Удалить заявку',
             callback_data=f'delete-order {order_id}',
         )])
-    if isinstance(status, OrderStatus.CREATED):
+    if status is OrderStatus.CREATED:
         keyboard.append([InlineKeyboardButton(
             text='Изменить данные',
             callback_data=f'edit-order {order_id}'
@@ -63,7 +63,7 @@ def confirm_delete_order(order_id: int) -> InlineKeyboardMarkup:
 
 participants_menu = InlineKeyboardMarkup(inline_keyboard=[
     [InlineKeyboardButton(text='➕ Добавить участника', callback_data='add-participant-menu')],
-    [InlineKeyboardButton(text='Активные участники', callback_data='active-participant')],
+    [InlineKeyboardButton(text='Активные участники', callback_data='active-participants')],
     [in_menu_btn],
 ])
 
@@ -88,7 +88,7 @@ active_participants_menu = InlineKeyboardMarkup(inline_keyboard=[
 def user_el(user_pk: int, role: int) -> InlineKeyboardMarkup:
     keyboard = []
 
-    if isinstance(role, (UserRole.OPERATOR, UserRole.PROVIDER)):
+    if role in (UserRole.OPERATOR, UserRole.PROVIDER):
         keyboard.append([InlineKeyboardButton(
             text='Изменить комиссию',
             callback_data=f'edit-participant-commission {user_pk}',
@@ -97,7 +97,7 @@ def user_el(user_pk: int, role: int) -> InlineKeyboardMarkup:
             text='Изменить баланс',
             callback_data=f'edit-participant-balance {user_pk}',
         )])
-    if isinstance(role, UserRole.PROVIDER):
+    if role is UserRole.PROVIDER:
         keyboard.append([InlineKeyboardButton(
             text='Выключить провайдера',
             callback_data=f'disable-provider {user_pk}',

@@ -36,12 +36,14 @@ class Order(Model):
     @pydantic.computed_field()
     def message(self) -> str:
         res = f'Заявка №<i>{self.id}</i> от {self.created_date}\n\n' \
-            f'<bСумма:</b> <code>{self.amount}</code>\n' \
+            f'<b>Сумма:</b> <code>{self.amount}</code>\n' \
             f'<b>Номер карты:</b> {self.card}\n' \
             f'<b>Банк:</b> {order_bank_to_text[self.bank]}\n' \
-            f'<b>Статус:</b> {order_status_to_text[self.status]}\n' \
-            f'<b>Оператор:</b> {self.operator.username or self.operator.user_id}\n' \
-            f'<b>Провайдер:</b> {self.provider.username or self.provider.user_id}'
+            f'<b>Статус:</b> {order_status_to_text[self.status]}\n'
+        if self.operator:
+            res += f'<b>Оператор:</b> {self.operator.title}\n'
+        if self.provider:
+            res += f'<b>Провайдер:</b> {self.provider.title}\n'
         if self.checks:
             res += '\n\n<b>Чеки:</b>\n' + '\n'.join(f'<code>{el.amount}</code> - {el.url}' for el in self.checks)
         if self.cancel_reason:

@@ -77,9 +77,9 @@ async def search(
             filter_kwargs['id__contains'] = filter_kwargs['user_id__contains'] = filter_kwargs['role__contains'] =\
                 filter_kwargs['username__contains'] = search_query
 
-        return await User.objects.select_related(
+        return await User.objects.select_related([
             'operator_orders', 'provider_orders',
-        ).filter(**filter_kwargs).offset(offset * 50).limit(50).all()
+        ]).filter(**filter_kwargs).offset(offset * 50).limit(50).all()
 
 
 async def delete(

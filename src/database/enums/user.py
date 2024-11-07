@@ -2,15 +2,15 @@ from enum import Enum
 
 
 class UserRole(str, Enum):
-    OWNER = 'owner'
-    ADMIN = 'admin'
-    PROVIDER = 'provider'
-    OPERATOR = 'operator'
-    MANAGER = 'manager'
+    OWNER = 'OWNER'
+    ADMIN = 'ADMIN'
+    PROVIDER = 'PROVIDER'
+    OPERATOR = 'OPERATOR'
+    MANAGER = 'MANAGER'
 
 
 class UserProviderStatus(str, Enum):
-    NO_PROVIDER = '-'
-    INACTIVE = 'inactive'
-    ACTIVE_INTER = 'inter'
-    ACTIVE_TINK = 'tink'
+    NO_PROVIDER = 'NO_PROVIDER'
+    INACTIVE = 'INACTIVE'
+    ACTIVE_INTER = 'ACTIVE_INTER'
+    ACTIVE_TINK = 'ACTIVE_TINK'
