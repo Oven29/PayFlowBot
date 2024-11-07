@@ -92,7 +92,7 @@ async def delete_order(call: CallbackQuery) -> None:
 
     await EditMessage(call)(
         text=f'{order.message}\n\n<b>❗❗Подтвердите удаление заявки\nВсе, связанные с ней данные будут удалены!</b>',
-        reply_markup=kb.confirm_delete(order.id),
+        reply_markup=kb.confirm_delete_order(order.id),
     )
 
 

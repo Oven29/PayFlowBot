@@ -1,9 +1,10 @@
 from datetime import datetime
 from typing import Optional
 from ormar import Integer, Model, String, DateTime, Enum
+import pydantic
 
 from ..connect import base_config
-from ..enums import UserRole, UserProviderStatus
+from ..enums import UserRole, UserProviderStatus, OrderStatus, user_role_to_text
 
 
 class User(Model):
@@ -17,3 +18,34 @@ class User(Model):
     balance: int = Integer(default=0)
     commission: int = Integer(default=0)
     provider_status: UserProviderStatus = Enum(enum_class=UserProviderStatus, default=UserProviderStatus.NO_PROVIDER)
+
+    @pydantic.computed_field()
+    def title(self) -> str:
+        if self.username:
+            return f'@{self.username} (id={self.user_id})'
+        return str(self.user_id)
+
+    @pydantic.computed_field()
+    def description(self) -> str:
+        res = f'Роль: {user_role_to_text[self.role]} Дата регитсрации: {self.reg_date}'
+        if isinstance(self.role, (UserRole.OPERATOR, UserRole.PROVIDER)):
+            res += f' Баланс: {self.balance} Комиссия: {self.commission}'
+        return res
+
+    @pydantic.computed_field()
+    def message(self) -> str:
+        res = f'<b>Пользователь {self.title}</b>\n\n' \
+            f'<b>Дата регистрации:</b> <code>{self.reg_date}</code>'
+
+        # for provider and operator
+        orders = getattr(self, f'{self.role.value}_orders', None)
+        if not orders:
+            return res
+        completed_orders = [el for el in orders if isinstance(el.status, OrderStatus.COMPLETED)]
+        canceled_orders = [el for el in orders if isinstance(el.status, OrderStatus.CANCELED)]
+
+        return f'{res}\n<b>Комиссия:</b> {self.commission}\n' \
+            f'<b>Текущий баланс:</b> {self.balance}\n' \
+            f'<b>Кол-во обработанных заявок:</b> {len(completed_orders)}\n' \
+            f'<b>Кол-во отменённых заявок:</b> {len(canceled_orders)}\n' \
+            f'<b>Общий объём обработанных денег:</b> {sum(el.amount for el in completed_orders)}'

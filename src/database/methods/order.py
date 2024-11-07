@@ -9,17 +9,17 @@ from ..models.user import User
 
 async def get(
     order_id: int,
-) -> Order:
+) -> Optional[Order]:
     """Get order
 
     Args:
         order_id (int): Order ID
 
     Returns:
-        Order: Order
+        Optional[Order]: Order
     """
     async with base_config.database:
-        return await Order.objects.get(id=order_id)
+        return await Order.objects.get_or_none(id=order_id)
 
 
 async def create(
@@ -42,7 +42,7 @@ async def create(
         Order: Created order
     """
     if operator is None:
-        operator = await user.get_or_none(operator_id)
+        operator = await user.get(user_id=operator_id)
 
     async with base_config.database:
         return await Order.objects.create(
@@ -121,20 +121,12 @@ async def search(
         if not status is None:
             filter_kwargs['status'] = status
         if search_query.strip():
-            filter_kwargs['card__contains'] = search_query
-            filter_kwargs['operator__username__contains'] = search_query
-            filter_kwargs['provider__username__contains'] = search_query
+            filter_kwargs['card__contains'] = filter_kwargs['operator__username__contains'] =\
+                filter_kwargs['provider__username__contains'] = filter_kwargs['id__contains'] = search_query
 
-        orders = await Order.objects.select_related([
+        return await Order.objects.select_related([
             Order.operator, Order.provider, 'checks',
-        ]).filter(**filter_kwargs).offset(offset * 49).limit(49).all()
-
-        if search_query.isdigit():
-            order = await get(order_id=int(search_query))
-            if not order is None:
-                orders.insert(0, order)
-
-        return orders
+        ]).filter(**filter_kwargs).offset(offset * 50).limit(50).all()
 
 
 async def delete(

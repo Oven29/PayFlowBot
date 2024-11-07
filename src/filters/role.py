@@ -13,7 +13,7 @@ class RoleFilter(BaseFilter):
         self.roles = roles
 
     async def __call__(self, event: TelegramObject) -> bool:
-        user = await db.user.get_or_none(user_id=event.from_user.id)
+        user = await db.user.get(user_id=event.from_user.id)
         return user and isinstance(user.role, self.roles)
 
 

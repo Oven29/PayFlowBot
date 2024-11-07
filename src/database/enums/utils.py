@@ -11,6 +11,8 @@ access_type_to_user_role = {
     AccessType.PROVIDER: UserRole.PROVIDER,
 }
 
+user_role_to_access_type = {v: k for k, v in access_type_to_user_role.items()}
+
 order_status_to_text = {
     OrderStatus.CREATED: 'Новые заявки',
     OrderStatus.COMPLETED: 'Обработанные',
@@ -23,4 +25,11 @@ order_bank_to_text = {
     OrderBank.TINK: 'Тинькофф',
     OrderBank.TINK_SBP: 'Тинькофф СБП',
     OrderBank.INTER: 'Межбанк',
+}
+
+user_role_to_text = {
+    UserRole.ADMIN: 'Админ',
+    UserRole.MANAGER: 'Менеджер',
+    UserRole.OPERATOR: 'Оператор',
+    UserRole.PROVIDER: 'Провайдер',
 }
