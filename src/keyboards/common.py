@@ -13,7 +13,8 @@ admin_menu = InlineKeyboardMarkup(inline_keyboard=[
 ])
 
 operator_menu = InlineKeyboardMarkup(inline_keyboard=[
-    [InlineKeyboardButton(text='', callback_data='')],
+    [InlineKeyboardButton(text='Добавить заявку', callback_data='add-order')],
+    [InlineKeyboardButton(text='Заявки', callback_data='operator-orders')],
 ])
 
 provider_menu = InlineKeyboardMarkup(inline_keyboard=[
