@@ -18,6 +18,12 @@ async def on_startup(bot: Bot) -> None:
     
     await bot.set_my_commands([
         BotCommand(command='/start', description='Открыть меню'),
+        BotCommand(command='/admin', description='Открыть меню админа'),
+        BotCommand(command='/operator', description='Открыть меню оператора'),
+        BotCommand(command='/provider', description='Открыть меню провайдера'),
+        BotCommand(command='/manager', description='Открыть меню менеджера'),
+        BotCommand(command='/freeze', description='Заморозить аккаунт'),
+        BotCommand(command='/remove', description='Удалить аккаунт'),
     ])
     # starting bot polling~
     await bot.delete_webhook(drop_pending_updates=True)

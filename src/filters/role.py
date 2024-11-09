@@ -35,11 +35,18 @@ class OperatorFilter(RoleFilter):
     """Filter by operator"""
 
     def __init__(self) -> None:
-        super().__init__(UserRole.OPERATOR)
+        super().__init__(UserRole.OPERATOR, UserRole.OWNER)
 
 
 class ProviderFilter(RoleFilter):
     """Filter by provider"""
 
     def __init__(self) -> None:
-        super().__init__(UserRole.PROVIDER)
+        super().__init__(UserRole.PROVIDER, UserRole.OWNER)
+
+
+class ManagerFilter(RoleFilter):
+    """Filter by manager"""
+
+    def __init__(self) -> None:
+        super().__init__(UserRole.MANAGER, UserRole.OWNER)

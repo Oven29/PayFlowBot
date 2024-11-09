@@ -19,3 +19,7 @@ operator_menu = InlineKeyboardMarkup(inline_keyboard=[
 provider_menu = InlineKeyboardMarkup(inline_keyboard=[
     [InlineKeyboardButton(text='', callback_data='')],
 ])
+
+manager_menu = InlineKeyboardMarkup(inline_keyboard=[
+    [InlineKeyboardButton(text='', callback_data='')],
+])

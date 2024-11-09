@@ -32,4 +32,5 @@ user_role_to_text = {
     UserRole.MANAGER: 'Менеджер',
     UserRole.OPERATOR: 'Оператор',
     UserRole.PROVIDER: 'Провайдер',
+    UserRole.MANAGER: 'Менеджер',
 }

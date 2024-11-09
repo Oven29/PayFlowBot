@@ -104,6 +104,7 @@ async def delete(
 async def update(
     user_id: Optional[int] = None,
     user_pk: Optional[int] = None,
+    user: Optional[User] = None,
     **kwargs: Dict[str, Any],
 ) -> User:
     """Update user
@@ -116,7 +117,8 @@ async def update(
         User: Updated user
     """
     async with base_config.database:
-        user = await get(user_id=user_id, user_pk=user_pk)
+        if user is None:
+            user = await get(user_id=user_id, user_pk=user_pk)
         await user.update(**kwargs)
     
     return user
