@@ -139,3 +139,28 @@ async def delete(
     """
     async with base_config.database:
         await Order.objects.filter(id=order_id).delete()
+
+
+async def get_user_orders(
+    opearator_id: Optional[int] = None,
+    provider_id: Optional[int] = None,
+) -> List[Order]:
+    """Get operator orders
+
+    Args:
+        opearator_id (Optional[int], optional): Operator Telegram ID. Defaults to None.
+        provider_id (Optional[int], optional): Provider Telegram ID. Defaults to None.
+
+    Returns:
+        List[Order]: List of orders
+    """
+    filter_kwargs = {}
+    if opearator_id:
+        filter_kwargs['operator__user_id'] = opearator_id
+    if provider_id:
+        filter_kwargs['provider__user_id'] = provider_id
+
+    async with base_config.database:
+        return await Order.objects.select_related([
+            Order.operator, Order.provider, 'checks',
+        ]).filter(**filter_kwargs).all()

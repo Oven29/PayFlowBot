@@ -37,7 +37,7 @@ class User(Model):
         res = f'<b>Пользователь {self.title}</b>\n\n' \
             f'<b>Дата регистрации:</b> <code>{self.reg_date}</code>'
 
-        if self.role in (UserRole.OPERATOR, UserRole.PROVIDER):
+        if self.role in (UserRole.OPERATOR, UserRole.PROVIDER, UserRole.MANAGER):
             res += f'\n<b>Комиссия:</b> {self.commission}\n' \
                 f'<b>Текущий баланс:</b> {self.balance}'
 
