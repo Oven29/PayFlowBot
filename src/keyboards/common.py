@@ -24,3 +24,8 @@ provider_menu = InlineKeyboardMarkup(inline_keyboard=[
 manager_menu = InlineKeyboardMarkup(inline_keyboard=[
     [InlineKeyboardButton(text='', callback_data='')],
 ])
+
+confirm_remove_account = InlineKeyboardMarkup(inline_keyboard=[
+    [InlineKeyboardButton(text='❗ Да, удалить', callback_data='confirm-remove-account')],
+    [InlineKeyboardButton(text='❌ Отмена', callback_data='main-menu')],
+])
