@@ -7,6 +7,7 @@ class UserRole(str, Enum):
     PROVIDER = 'PROVIDER'
     OPERATOR = 'OPERATOR'
     MANAGER = 'MANAGER'
+    IS_FREEZE = 'IS_FREEZE'
 
 
 class UserProviderStatus(str, Enum):

@@ -1,6 +1,6 @@
 from datetime import datetime
 from typing import Optional
-from ormar import Integer, Model, String, DateTime, Enum
+from ormar import Integer, Model, String, DateTime, Enum, Float, Boolean
 import pydantic
 
 from ..connect import base_config
@@ -16,7 +16,7 @@ class User(Model):
     reg_date: datetime = DateTime(default=datetime.now)
     role: UserRole = Enum(enum_class=UserRole)
     balance: int = Integer(default=0)
-    commission: int = Integer(default=0)
+    commission: float = Float(default=0)
     provider_status: UserProviderStatus = Enum(enum_class=UserProviderStatus, default=UserProviderStatus.NO_PROVIDER)
 
     @pydantic.computed_field()
