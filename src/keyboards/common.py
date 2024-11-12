@@ -18,7 +18,8 @@ operator_menu = InlineKeyboardMarkup(inline_keyboard=[
 ])
 
 provider_menu = InlineKeyboardMarkup(inline_keyboard=[
-    [InlineKeyboardButton(text='', callback_data='')],
+    [InlineKeyboardButton(text='Начать сессию', callback_data='start-work')],
+    [InlineKeyboardButton(text='Диспуты', callback_data='provider-disputes')],
 ])
 
 manager_menu = InlineKeyboardMarkup(inline_keyboard=[

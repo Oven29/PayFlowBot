@@ -34,3 +34,8 @@ user_role_to_text = {
     UserRole.PROVIDER: 'Провайдер',
     UserRole.MANAGER: 'Менеджер',
 }
+
+provider_status_to_text = {
+    UserProviderStatus.ACTIVE_TINK: 'Тинькофф',
+    UserProviderStatus.ACTIVE_INTER: 'МежБанк',
+}

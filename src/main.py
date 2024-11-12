@@ -8,7 +8,7 @@ import asyncio
 from src import database
 from src import config
 from src.utils.setup import logging_setup, dir_setup
-from src.handlers import common, admin
+from src.handlers import common, admin, operator, provider
 
 
 async def on_startup(bot: Bot) -> None:
@@ -24,6 +24,7 @@ async def on_startup(bot: Bot) -> None:
         BotCommand(command='/manager', description='Открыть меню менеджера'),
         BotCommand(command='/freeze', description='Заморозить аккаунт'),
         BotCommand(command='/remove', description='Удалить аккаунт'),
+        BotCommand(command='/turn-off', description='Завершить сессию'),
     ])
     # starting bot polling~
     await bot.delete_webhook(drop_pending_updates=True)
@@ -43,6 +44,8 @@ def start() -> None:
     dp.include_routers(
         *common.routers,
         *admin.routers,
+        *operator.routers,
+        *provider.routers,
     )
     dp.startup.register(on_startup)
     asyncio.run(dp.start_polling(bot))

@@ -61,7 +61,7 @@ async def add_order_amount(message: Message, state: FSMContext) -> None:
 
     await message.answer(
         text='Подтвердите создание заявки:\n\n'
-            f'Банк: {order_bank_to_text[OrderBank._member_map_[data["bank"]]]}\n'
+            f'Банк: {order_bank_to_text[OrderBank(data["bank"])]}\n'
             f'Карта: {data["card"]}\n'
             f'Сумма: {message.text}',
         reply_markup=kb.confirm_adding_order,
@@ -84,7 +84,7 @@ async def confirm_add_order(call: CallbackQuery, state: FSMContext) -> None:
         user_id=call.from_user.id,
     )
     order = await db.order.create(
-        bank=OrderBank._member_map_[data['bank']],
+        bank=OrderBank(data['bank']),
         card=data['card'],
         amount=data['amount'],
         operator=user,

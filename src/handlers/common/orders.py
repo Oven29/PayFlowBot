@@ -81,7 +81,7 @@ async def move_order(call: CallbackQuery, user: db.user.User) -> None:
     _, new_status, order_id = call.data.split()
     order = await db.order.update(
         order_id=int(order_id),
-        status=OrderStatus._member_map_[new_status],
+        status=OrderStatus(new_status),
     )
 
     await call.messsage.edit_text(

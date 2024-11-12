@@ -5,7 +5,7 @@ from aiogram.fsm.context import FSMContext
 
 from src.database import db
 from src.database.enums import access_type_to_user_role
-from src.database.enums.user import UserRole
+from src.database.enums.user import UserProviderStatus, UserRole
 from src.keyboards import common as kb
 
 
@@ -57,6 +57,7 @@ async def freeze(message: Message, state: FSMContext) -> None:
     await db.user.update(
         user_id=message.from_user.id,
         role=UserRole.IS_FREEZE,
+        provider_status=UserProviderStatus.INACTIVE,
     )
 
     await message.answer(

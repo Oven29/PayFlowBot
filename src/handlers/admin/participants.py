@@ -7,6 +7,7 @@ from aiogram.fsm.context import FSMContext
 
 from src.database import db
 from src.database.enums import UserRole, user_role_to_text, user_role_to_access_type
+from src.database.enums.user import UserProviderStatus
 from src.keyboards import admin as kb
 from src.filters.common import amount_filter, number_filter
 from src.filters.role import AdminFilter
@@ -65,7 +66,7 @@ async def add_participant_input(message: Message, state: FSMContext) -> None:
 
     data = await state.get_data()
     await state.clear()
-    user_role = UserRole._member_map_[data['role']]
+    user_role = UserRole(data['role'])
     token = await db.token.create(
         access_type=user_role_to_access_type[user_role],
         user_id=user_id,
@@ -204,4 +205,25 @@ async def set_participant_balance(message: Message, state: FSMContext) -> None:
     await message.answer(
         text=f'Баланс пользователя <b>{user.title}</b> изменен на <code>{message.text}</code>',
         reply_markup=kb.in_menu,
+    )
+
+
+@router.callback_query(F.data.startswith('disable-provider'))
+async def disable_provider(call: CallbackQuery) -> None:
+    _, user_pk = call.data.split()
+    user = await db.user.get(user_pk=int(user_pk))
+
+    if user.provider_status is UserProviderStatus.INACTIVE:
+        return await call.answer(
+            text='Пользователь уже неактивен',
+            show_alert=True,
+        )
+
+    await db.user.update(
+        user=user,
+        status=UserProviderStatus.INACTIVE,
+    )
+    await call.answer(
+        text='Пользователь успешно выключен',
+        show_alert=True,
     )

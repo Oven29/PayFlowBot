@@ -1,4 +1,4 @@
-from typing import Any, Dict
+from typing import Any
 from aiogram import Bot
 from aiogram.client.default import DefaultBotProperties
 
@@ -9,7 +9,7 @@ class UseBot:
     """
     Async context manager for aiogram.Bot instance.
     """
-    async def __aenter__(self, **kwargs: Dict[str, Any]) -> Bot:
+    async def __aenter__(self, **kwargs: Any) -> Bot:
         """
         Create Bot instance.
         """
