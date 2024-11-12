@@ -56,14 +56,14 @@ async def create(
 async def update(
     order: Optional[Order] = None,
     order_id: Optional[int] = None,
-    **kwargs: Dict[str, Any],
+    **kwargs: Any,
 ) -> Order:
     """Update order
 
     Args:
         order (Optional[Order], optional): Order. Defaults to None.
         order_id (Optional[int], optional): Order ID. Defaults to None.
-        **kwargs (Dict[str, Any]): Fields to update
+        **kwargs (Any): Fields to update
 
     Returns:
         Order: Updated order
@@ -105,6 +105,7 @@ async def search(
     status: OrderStatus | None,
     search_query: str,
     offset: int = 0,
+    **kwargs: Any,
 ) -> List[Order]:
     """Search orders
 
@@ -112,12 +113,13 @@ async def search(
         status (OrderStatus | None): Order status
         search_query (str): Search query
         offset (int, optional): Offset. Defaults to 0.
+        **kwargs (Any): Additional params for search
 
     Returns:
         List[Order]: List of orders
     """
     async with base_config.database:
-        filter_kwargs = {}
+        filter_kwargs = kwargs.copy()
         if not status is None:
             filter_kwargs['status'] = status
         if search_query.strip():

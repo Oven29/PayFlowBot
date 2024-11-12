@@ -9,12 +9,12 @@ in_menu = InlineKeyboardMarkup(inline_keyboard=[[in_menu_btn]])
 
 admin_menu = InlineKeyboardMarkup(inline_keyboard=[
     [InlineKeyboardButton(text='Участники', callback_data='admin participants')],
-    [InlineKeyboardButton(text='Заявки', callback_data='admin orders')],
+    [InlineKeyboardButton(text='Заявки', callback_data='orders')],
 ])
 
 operator_menu = InlineKeyboardMarkup(inline_keyboard=[
     [InlineKeyboardButton(text='Добавить заявку', callback_data='add-order')],
-    [InlineKeyboardButton(text='Заявки', callback_data='operator-orders')],
+    [InlineKeyboardButton(text='Заявки', callback_data='orders')],
 ])
 
 provider_menu = InlineKeyboardMarkup(inline_keyboard=[

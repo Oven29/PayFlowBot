@@ -5,7 +5,7 @@ import pydantic
 
 from .user import User
 from ..connect import base_config
-from ..enums import OrderBank, OrderStatus, order_status_to_text, order_bank_to_text
+from ..enums import UserRole, OrderBank, OrderStatus, order_status_to_text, order_bank_to_text
 
 
 class Order(Model):
@@ -33,16 +33,15 @@ class Order(Model):
             res += f'провайдер - {self.provider.title} оператор - {self.operator.title}'
         return res
 
-    @pydantic.computed_field()
-    def message(self) -> str:
+    def get_message(self, role: UserRole) -> str:
         res = f'Заявка №<i>{self.id}</i> от {self.created_date}\n\n' \
             f'<b>Сумма:</b> <code>{self.amount}</code>\n' \
             f'<b>Номер карты:</b> {self.card}\n' \
             f'<b>Банк:</b> {order_bank_to_text[self.bank]}\n' \
             f'<b>Статус:</b> {order_status_to_text[self.status]}\n'
-        if self.operator:
+        if self.operator and not role is UserRole.OPERATOR:
             res += f'<b>Оператор:</b> {self.operator.title}\n'
-        if self.provider:
+        if self.provider and not role is UserRole.PROVIDER:
             res += f'<b>Провайдер:</b> {self.provider.title}\n'
         if self.checks:
             res += '\n\n<b>Чеки:</b>\n' + '\n'.join(f'<code>{el.amount}</code> - {el.url}' for el in self.checks)

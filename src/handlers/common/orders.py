@@ -7,8 +7,9 @@ from aiogram.fsm.context import FSMContext
 
 from src.database import db
 from src.database.enums import OrderStatus, order_status_to_text
-from src.keyboards import admin as kb
-from src.filters.role import AdminFilter
+from src.database.enums.user import UserRole
+from src.keyboards import orders as kb
+from src.filters.role import RoleFilter
 from src.filters.common import amount_filter, card_filter
 from src.utils.edit_message import EditMessage
 from src.utils.other import generate_rand_string
@@ -16,22 +17,23 @@ from src.states.admin import EditOrderState
 
 
 router = Router(name=__name__)
-router.message.filter(AdminFilter())
-router.callback_query.filter(AdminFilter())
+orders_filter = RoleFilter(UserRole.OWNER, UserRole.ADMIN, UserRole.OPERATOR, pass_user=True)
+router.message.filter(orders_filter)
+router.callback_query.filter(orders_filter)
 
 logger = logging.getLogger(__name__)
 
 
-@router.callback_query(F.data == 'admin orders')
+@router.callback_query(F.data == 'orders')
 async def admin_orders_menu(call: CallbackQuery) -> None:
     await EditMessage(call)(
-        text='Выберите тип заявки',
+        text='<b>Выберите тип заявки</b>',
         reply_markup=kb.orders_menu,
     )
 
 
 @router.inline_query(F.query.startswith('order'))
-async def order_inline(query: InlineQuery) -> None:
+async def order_inline(query: InlineQuery, user: db.user.User) -> None:
     try:
         _, status, *search_query = query.query.split()
     except ValueError:
@@ -43,17 +45,18 @@ async def order_inline(query: InlineQuery) -> None:
         status=OrderStatus._value2member_map_.get(status),
         search_query=' '.join(search_query),
         offset=offset,
+        **({'opeator': user} if user.role is UserRole.OPERATOR else {}),
     )
 
     await query.answer(
         results=[InlineQueryResultArticle(
             id=hashlib.md5(generate_rand_string(8).encode()).hexdigest(),
             input_message_content=InputTextMessageContent(
-                message_text=order.message,
+                message_text=order.get_message(user.role),
             ),
             title=order.title,
             description=order.description,
-            reply_markup=kb.order_el(order.id, order.status),
+            reply_markup=kb.order_el(order.id, order.status, user.role),
         ) for order in orders],
         cache_time=5,
         is_personal=True,
@@ -62,19 +65,19 @@ async def order_inline(query: InlineQuery) -> None:
 
 
 @router.callback_query(F.data.startswith('order-menu'))
-async def order_menu(call: CallbackQuery, state: FSMContext) -> None:
+async def order_menu(call: CallbackQuery, state: FSMContext, user: db.user.User) -> None:
     await state.clear()
     _, order_id = call.data.split()
     order = await db.order.get(order_id=int(order_id))
 
     await EditMessage(call)(
-        text=order.message,
-        reply_markup=kb.order_el(order.id, order.status),
+        text=order.get_message(user.role),
+        reply_markup=kb.order_el(order.id, order.status, user.role),
     )
 
 
 @router.callback_query(F.data.startswith('move-order'))
-async def move_order(call: CallbackQuery) -> None:
+async def move_order(call: CallbackQuery, user: db.user.User) -> None:
     _, new_status, order_id = call.data.split()
     order = await db.order.update(
         order_id=int(order_id),
@@ -82,18 +85,19 @@ async def move_order(call: CallbackQuery) -> None:
     )
 
     await call.messsage.edit_text(
-        text=f'{order.message}\n\nЗаявка перенесена в <i>{order_status_to_text[order.status]}</i>',
-        reply_markup=kb.order_el(order.id, order.status),
+        text=f'{order.get_message(user.role)}\n\nЗаявка перенесена в <i>{order_status_to_text[order.status]}</i>',
+        reply_markup=kb.order_el(order.id, order.status, user.role),
     )
 
 
 @router.callback_query(F.data.startswith('delete-order'))
-async def delete_order(call: CallbackQuery) -> None:
+async def delete_order(call: CallbackQuery, user: db.user.User) -> None:
     _, order_id = call.data.split()
     order = await db.order.get(order_id=int(order_id))
 
     await EditMessage(call)(
-        text=f'{order.message}\n\n<b>❗❗Подтвердите удаление заявки\nВсе, связанные с ней данные будут удалены!</b>',
+        text=f'{order.get_message(user.role)}\n\n'
+            '<b>❗❗Подтвердите удаление заявки\nВсе, связанные с ней данные будут удалены!</b>',
         reply_markup=kb.confirm_delete_order(order.id),
     )
 
@@ -110,25 +114,25 @@ async def confirm_delete_order(call: CallbackQuery) -> None:
 
 
 @router.callback_query(F.data.startswith('edit-order'))
-async def edit_order(call: CallbackQuery) -> None:
+async def edit_order(call: CallbackQuery, user: db.user.User) -> None:
     _, order_id = call.data.split()
     order = await db.order.get(order_id=int(order_id))
 
     await EditMessage(call)(
-        text=f'{order.message}\n\n<b>Изменение заявки</b>\n<i>Выберите, что хотите изменить</i>',
+        text=f'{order.get_message(user.role)}\n\n<b>Изменение заявки</b>\n<i>Выберите, что хотите изменить</i>',
         reply_markup=kb.edit_order(order.id),
     )
 
 
 @router.callback_query(F.data.startswith('edit-amount-order'))
-async def edit_order_amount(call: CallbackQuery, state: FSMContext) -> None:
+async def edit_order_amount(call: CallbackQuery, state: FSMContext, user: db.user.User) -> None:
     _, order_id = call.data.split()
     order = await db.order.get(order_id=int(order_id))
     await state.set_state(EditOrderState.amount)
     await state.update_data(order_id=order.id)
 
     await EditMessage(call)(
-        text=f'{order.message}\n\n<b>Изменение суммы заявки</b>\n<i>Укажите новую сумму</i>',
+        text=f'{order.get_message(user.role)}\n\n<b>Изменение суммы заявки</b>\n<i>Укажите новую сумму</i>',
         reply_markup=kb.cancel,
     )
 
@@ -149,14 +153,14 @@ async def set_order_amount(message: Message, state: FSMContext) -> None:
 
 
 @router.callback_query(F.data.startswith('edit-card-order'))
-async def edit_order_card(call: CallbackQuery, state: FSMContext) -> None:
+async def edit_order_card(call: CallbackQuery, state: FSMContext, user: db.user.User) -> None:
     _, order_id = call.data.split()
     order = await db.order.get(order_id=int(order_id))
     await state.set_state(EditOrderState.card)
     await state.update_data(order_id=order.id)
 
     await EditMessage(call)(
-        text=f'{order.message}\n\n<b>Изменение карты заявки</b>\n<i>Укажите новую карту</i>',
+        text=f'{order.get_message(user.role)}\n\n<b>Изменение карты заявки</b>\n<i>Укажите новую карту</i>',
         reply_markup=kb.cancel,
     )
 

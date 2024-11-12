@@ -1,4 +1,4 @@
-from typing import Tuple
+from typing import Any, Dict, Tuple
 from aiogram.filters import BaseFilter
 from aiogram.types import TelegramObject
 
@@ -9,12 +9,21 @@ from src.database import db
 class RoleFilter(BaseFilter):
     """Filter by role"""
 
-    def __init__(self, *roles: Tuple[UserRole]) -> None:
+    def __init__(
+        self,
+        *roles: Tuple[UserRole],
+        pass_user: bool = False
+    ) -> None:
         self.roles = tuple(type(role) for role in roles)
+        self.pass_user = pass_user
 
-    async def __call__(self, event: TelegramObject) -> bool:
+    async def __call__(self, event: TelegramObject) -> bool | Dict[str, Any]:
         user = await db.user.get(user_id=event.from_user.id)
-        return user and isinstance(user.role, self.roles)
+        if not user or not isinstance(user.role, self.roles):
+            return False
+        if self.pass_user:
+            return {'user': user}
+        return True
 
 
 class OwnerFilter(RoleFilter):
