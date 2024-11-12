@@ -38,4 +38,11 @@ user_role_to_text = {
 provider_status_to_text = {
     UserProviderStatus.ACTIVE_TINK: 'Тинькофф',
     UserProviderStatus.ACTIVE_INTER: 'МежБанк',
+    UserProviderStatus.INACTIVE: 'Неактивен',
+}
+
+order_bank_to_provider_status = {
+    OrderBank.TINK: UserProviderStatus.ACTIVE_TINK,
+    OrderBank.TINK_SBP: UserProviderStatus.ACTIVE_TINK,
+    OrderBank.INTER: UserProviderStatus.ACTIVE_INTER,
 }

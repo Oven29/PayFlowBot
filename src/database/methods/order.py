@@ -82,13 +82,16 @@ async def reject(
     reason: str,
     order: Optional[Order] = None,
     order_id: Optional[int] = None,
-) -> None:
+) -> Order:
     """Reject order
 
     Args:
         order (Optional[Order], optional): Order. Defaults to None.
         order_id (Optional[int], optional): Order ID. Defaults to None.
         reason (str): Reject reason
+
+    Returns:
+        Order: Updated order
     """
     async with base_config.database:
         if order is None:
@@ -99,6 +102,9 @@ async def reject(
             provider=provider,
             reason=reason,
         )
+        await order.update(status=OrderStatus.CREATED)
+
+    return order
 
 
 async def search(
@@ -166,3 +172,20 @@ async def get_user_orders(
         return await Order.objects.select_related([
             Order.operator, Order.provider, 'checks',
         ]).filter(**filter_kwargs).all()
+
+
+async def select(
+    **kwargs: Any,
+) -> List[Order]:
+    """Select orders
+
+    Args:
+        **kwargs (Any): Filter params
+
+    Returns:
+        List[Order]: List of orders
+    """
+    async with base_config.database:
+        return await Order.objects.select_related([
+            Order.operator, Order.provider, 'checks',
+        ]).filter(**kwargs).all()

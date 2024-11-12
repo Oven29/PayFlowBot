@@ -122,3 +122,20 @@ async def update(
         await user.update(**kwargs)
     
     return user
+
+
+async def select(
+    **kwargs: Any,
+) -> List[User]:
+    """Select users
+
+    Args:
+        **kwargs (Any): Filter params
+
+    Returns:
+        List[User]: List of users
+    """
+    async with base_config.database:
+        return await User.objects.select_related([
+            'operator_orders', 'provider_orders',
+        ]).filter(**kwargs).all()

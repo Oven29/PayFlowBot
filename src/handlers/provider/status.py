@@ -7,6 +7,7 @@ from src.database import db
 from src.database.enums import UserProviderStatus
 from src.keyboards import provider as kb
 from src.utils.edit_message import EditMessage
+from src.utils.distribute_order import go_on_shift
 from src.filters.role import ProviderFilter
 
 
@@ -41,16 +42,19 @@ async def select_status(call: CallbackQuery) -> None:
 
 
 @router.callback_query(F.data.startswith('turn-on-status'))
-async def turn_on_status(call: CallbackQuery) -> None:
+async def turn_on_status(call: CallbackQuery, state: FSMContext) -> None:
     _, status = call.data.split()
+    await state.update_data(status=status)
     status = UserProviderStatus(status)
 
-    await db.user.update(
+    user = await db.user.update(
         user_id=call.from_user.id,
         provider_status=status,
     )
+    await go_on_shift(user)
+
     await EditMessage(call)(
-        text=f'<b>{status.name}</b>\nСтатус 🟩 on\n'
+        text=f'<b>{status.name}</b>\nСтатус 🟩 on\n\nОжидайте, бот будет отправлять Вам заявки\n\n'
             '<i>Для завершения сессии воспользуйтесь кнопкой ниже или командой /turn-off</i>',
         reply_markup=kb.turn_off_status,
     )
@@ -59,7 +63,7 @@ async def turn_on_status(call: CallbackQuery) -> None:
 @router.callback_query(F.data == 'turn-off-status')
 @router.message(Command('turn-off'))
 async def turn_off_status(event: Message | CallbackQuery, state: FSMContext) -> None:
-    await state.clearI()
+    await state.clear()
     await db.user.update(
         user_id=event.from_user.id,
         provider_status=UserProviderStatus.INACTIVE,

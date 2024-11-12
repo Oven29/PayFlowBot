@@ -15,3 +15,4 @@ class UserProviderStatus(str, Enum):
     INACTIVE = 'INACTIVE'
     ACTIVE_INTER = 'ACTIVE_INTER'
     ACTIVE_TINK = 'ACTIVE_TINK'
+    BUSY = 'BUSY'

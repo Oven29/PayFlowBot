@@ -8,6 +8,7 @@ from src.keyboards import operator as kb
 from src.filters.common import amount_filter, number_filter
 from src.filters.role import AdminFilter
 from src.states.operator import AddOrderState
+from src.utils.distribute_order import distribute_order
 
 
 router = Router(name=__name__)
@@ -89,9 +90,10 @@ async def confirm_add_order(call: CallbackQuery, state: FSMContext) -> None:
         amount=data['amount'],
         operator=user,
     )
+    await distribute_order(order)
 
     await state.clear()
     await call.message.edit_text(
-        text=f'Заявка {order.title} создана',
+        text=f'Заявка <b>{order.title}</b> создана',
         reply_markup=kb.in_menu,
     )
