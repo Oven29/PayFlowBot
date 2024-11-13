@@ -19,7 +19,9 @@ async def get(
         Optional[Order]: Order
     """
     async with base_config.database:
-        return await Order.objects.get_or_none(id=order_id)
+        return await Order.objects.select_related(
+            'operator', 'provider',
+        ).get_or_none(id=order_id)
 
 
 async def create(

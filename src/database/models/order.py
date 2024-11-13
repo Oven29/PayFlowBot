@@ -24,7 +24,7 @@ class Order(Model):
 
     @pydantic.computed_field()
     def title(self) -> str:
-        return f'№{self.id} {order_status_to_text[self.status]} {self.amount}'
+        return f'№{self.id} {self.amount}₽'
 
     @pydantic.computed_field()
     def description(self) -> str:

@@ -51,3 +51,6 @@ class User(Model):
             f'<b>Кол-во обработанных заявок:</b> {len(completed_orders)}\n' \
             f'<b>Кол-во отменённых заявок:</b> {len(canceled_orders)}\n' \
             f'<b>Общий объём обработанных денег:</b> {sum(el.amount for el in completed_orders)}'
+
+    def calculate_balance(self, order_amount: int) -> int:
+        return self.balance + order_amount * (self.percent / 100)

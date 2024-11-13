@@ -3,6 +3,6 @@ from enum import Enum
 
 class CheckStatus(str, Enum):
     OK = 'OK'
-    UNDERKPAYMENT = 'UNDERKPAYMENT'
+    UNDERPAYMENT = 'UNDERKPAYMENT'
     OVERPAYMENT = 'OVERPAYMENT'
     ERROR = 'ERROR'

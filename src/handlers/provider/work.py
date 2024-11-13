@@ -1,18 +1,24 @@
-from aiogram import Router, F
+import logging
+from aiogram import Bot, F, Router
 from aiogram.types import Message, CallbackQuery
 from aiogram.fsm.context import FSMContext
 
+from src import config
 from src.database import db
-from src.database.enums import UserProviderStatus, provider_status_to_text
+from src.database.enums import UserProviderStatus, CheckStatus, provider_status_to_text
+from src.database.enums.order import OrderStatus
 from src.filters.role import ProviderFilter
 from src.keyboards import provider as kb
 from src.states.provider import RejectOrderState, CancelOrderState, DisputeOrderState, ConfirmOrderState
 from src.utils.edit_message import EditMessage
+from src.utils.check.tink import TinkCheck, BaseCheckException
 
 
 router = Router(name=__name__)
 router.message.filter(ProviderFilter())
 router.callback_query.filter(ProviderFilter())
+
+logger = logging.getLogger(__name__)
 
 
 @router.callback_query(F.data.startswith('reject-order'))
@@ -78,5 +84,81 @@ async def finish_order(call: CallbackQuery, state: FSMContext) -> None:
 
 
 @router.message(F.text, ConfirmOrderState.check)
-async def get_check(message: Message, state: FSMContext) -> None:
-    pass
+async def get_check(message: Message, state: FSMContext, bot: Bot) -> None:
+    state_data = await state.get_data()
+    order = await db.order.get(
+        order_id=state_data['order_id'],
+    )
+    check = TinkCheck(message.text, order.card)
+
+    try:
+        await check.valid()
+    except BaseCheckException as e:
+        await db.check.create(
+            amount=check.amount,
+            status=CheckStatus.ERROR,
+            url=check.url,
+            order=order,
+        )
+        return await message.answer(
+            text='<b>Чек не прошел проверку, пожалуйста проверьте реквезиты и '
+                f'скиньте чек ещё раз</b>\n\n<i>{e.message}</i>',
+        )
+
+    current_amount = state_data.get('current_amount', 0) + check.amount
+
+    if current_amount < order.amount:
+        await state.update_data(current_amount=current_amount)
+        await db.check.create(
+            amount=check.amount,
+            status=CheckStatus.UNDERPAYMENT,
+            url=check.url,
+            order=order,
+        )
+        return await message.answer(
+            text=f'<b>Сумма чека меньше суммы заявки</b>\n\n'
+                f'<b>Сумма чека:</b> {check.amount}\n'
+                f'<b>Сумма заявки:</b> {order.amount}\n'
+                f'Доплатите {order.amount - check.amount} и пришлите чек',
+        )
+
+    note = ''
+    check_status = CheckStatus.OK
+    if current_amount > order.amount:
+        note = f'\n\n! Сумма переплаты <b>{current_amount - order.amount}</b>'
+        check_status = CheckStatus.OVERPAYMENT
+        try:
+            await bot.send_message(
+                chat_id=config.OVERPAYEMNT_CHAT_ID,
+                text=f'Переплата <i>{current_amount - order.amount}</i> по заявке {order.title}\n'
+                    f'Оператор: {order.operator.title}\nПровайдер: {order.provider.title}',
+            )
+        except Exception as e:
+            logger.warning(f'Error when sending overpayment notifier - {e}')
+
+    await state.clear()
+    await db.check.create(
+        amount=check.amount,
+        status=check_status,
+        url=check.url,
+        order=order,
+    )
+    await db.order.update(
+        order=order,
+        status=OrderStatus.COMPLETED,
+    )
+    await db.user.update(
+        user=order.provider,
+        provider_staus=UserProviderStatus(state_data.get('status', UserProviderStatus.INACTIVE.value)),
+        balance=order.provider.calculate_balance(check.amount),
+    )
+
+    await message.answer(
+        text=f'Заявка <b>{order.title}</b> закрыта{note}',
+        reply_markup=kb.in_menu,
+    )
+    await bot.send_message(
+        chat_id=order.provider.user_id,
+        text=f'Заявка <b>{order.title}</b> закрыта',
+        reply_markup=kb.in_menu,
+    )

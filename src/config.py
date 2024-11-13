@@ -23,3 +23,5 @@ LOGGING_LEVEL: Final[str] = logging._nameToLevel.get(os.getenv('LOGGING', 'WARN'
 BOT_USERNAME: Optional[str] = ...
 
 DATABASE_URL: Final[str] = f'sqlite:///' + os.path.join(data_dir, 'database.db')
+
+OVERPAYEMNT_CHAT_ID: Final[int] = os.getenv('OVERPAYEMNT_CHAT_ID', -1)
