@@ -24,7 +24,7 @@ async def on_startup(bot: Bot) -> None:
         BotCommand(command='/manager', description='Открыть меню менеджера'),
         BotCommand(command='/freeze', description='Заморозить аккаунт'),
         BotCommand(command='/remove', description='Удалить аккаунт'),
-        BotCommand(command='/turn-off', description='Завершить сессию'),
+        BotCommand(command='/turn_off', description='Завершить сессию'),
     ])
     # starting bot polling~
     await bot.delete_webhook(drop_pending_updates=True)

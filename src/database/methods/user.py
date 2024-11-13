@@ -1,7 +1,7 @@
 from typing import Any, Dict, List, Optional, Tuple
 
 from ..connect import base_config
-from ..enums import UserRole
+from ..enums import UserRole, UserProviderStatus
 from ..models.user import User
 
 
@@ -26,6 +26,7 @@ async def get_or_create(
             _defaults={
                 'username': username,
                 'role': role,
+                **({'provider_status': UserProviderStatus.INACTIVE} if role is UserRole.PROVIDER else {}),
             },
         )
 

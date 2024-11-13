@@ -34,7 +34,7 @@ async def distribute_order(
 ) -> None:
     """Distribute order to provider if exists free providers"""
     free_providers = await db.user.select(
-        provider_status__in=order_bank_to_provider_status(order.bank),
+        provider_status=order_bank_to_provider_status[order.bank],
     )
     if not len(free_providers):
         return

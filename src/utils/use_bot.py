@@ -9,13 +9,16 @@ class UseBot:
     """
     Async context manager for aiogram.Bot instance.
     """
-    async def __aenter__(self, **kwargs: Any) -> Bot:
+    def __init__(self, **params: Any) -> None:
+        self.params = params
+
+    async def __aenter__(self) -> Bot:
         """
         Create Bot instance.
         """
         self._instance = Bot(
             token=config.BOT_TOKEN,
-            default=DefaultBotProperties(**kwargs),
+            default=DefaultBotProperties(**self.params),
         )
         return self._instance
 
@@ -23,4 +26,4 @@ class UseBot:
         """
         Close Bot instance.
         """
-        await self._instance.close()
+        await self._instance.session.close()

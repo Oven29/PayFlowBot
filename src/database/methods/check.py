@@ -50,3 +50,18 @@ async def create(
             order=order,
             status=status,
         )
+
+
+async def check_exists_by_url(
+    url: str,
+) -> bool:
+    """Check if check exists by URL
+
+    Args:
+        url (str): Check URL
+
+    Returns:
+        bool: Check exists
+    """
+    async with base_config.database:
+        return await Check.objects.filter(url=url).exists()

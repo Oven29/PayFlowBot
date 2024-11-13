@@ -49,14 +49,14 @@ class TinkCheck(BaseCheck):
             logger.error(e)
             raise UnknownCheckError
 
-        self.amount = result['operationAmount']
-
         if not len(result):
             raise CheckNotFound
 
-        opearation_datetime = datetime.strptime(result['operationDateTime'], "%Y-%m-%d %H:%M:%S")
-        if datetime.now() - opearation_datetime > timedelta(days=3):
-            raise InvalidCheckDate
+        self.amount = float(result['operationAmount'])
+
+        # opearation_datetime = datetime.strptime(result['operationDateTime'], "%Y-%m-%d %H:%M:%S")
+        # if datetime.now() - opearation_datetime > timedelta(days=3):
+        #     raise InvalidCheckDate
 
         if not (result['operationDstNumber'][:6] == self.card[:6] and \
                  result['operationDstNumber'][-4:] == self.card[-4:]):

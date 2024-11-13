@@ -4,7 +4,7 @@ class BaseCheckException(Exception):
 
 class InvalidCheckUrl(BaseCheckException):
     """Invalid check URL"""
-    message = 'Некорректный ввод ссылки'
+    message = 'Некорректный ввод ссылки, вид ссылки https://link.tbank.ru/123AbcD456'
 
 
 class CheckNotFound(BaseCheckException):
@@ -22,9 +22,9 @@ class InvalidCheckRecipient(BaseCheckException):
     message = 'Некорректные данные получателя'
 
 
-class InvalidCheckDate(BaseCheckException):
-    """Invalid check date"""
-    message = 'Некорректное время пополнения'
+# class InvalidCheckDate(BaseCheckException):
+#     """Invalid check date"""
+#     message = 'Некорректное время пополнения'
 
 
 class UnknownCheckError(BaseCheckException):

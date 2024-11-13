@@ -3,6 +3,8 @@ from aiogram.filters import CommandStart, Command
 from aiogram.types import Message, CallbackQuery
 from aiogram.fsm.context import FSMContext
 
+from .menu import admin_menu, operator_menu, provider_menu, manager_menu
+
 from src.database import db
 from src.database.enums import access_type_to_user_role
 from src.database.enums.user import UserProviderStatus, UserRole
@@ -12,15 +14,34 @@ from src.keyboards import common as kb
 router = Router(name=__name__)
 
 
+async def get_menu_by_role(message: Message, state: FSMContext, role: UserRole) -> None:
+    if role in (UserRole.ADMIN, UserRole.OWNER):
+        await admin_menu(message, state)
+
+    elif role is UserRole.OPERATOR:
+        await operator_menu(message, state)
+
+    elif role is UserRole.PROVIDER:
+        await provider_menu(message, state)
+
+    elif role is UserRole.MANAGER:
+        await manager_menu(message, state)
+
+
 @router.message(CommandStart())
-async def unregistered_start(message: Message, state: FSMContext, bot: Bot) -> None:
+async def start_command(message: Message, state: FSMContext) -> None:
     _, *args = message.text.split()
     await state.clear()
 
-    if not args:
+    user = await db.user.get(user_id=message.from_user.id)
+
+    if not args and user is None:
         return await message.answer(
             text='Вы не имеете доступ к боту',
         )
+
+    if not args and not user is None:
+        return await get_menu_by_role(message, state, user.role)
 
     code = args[0]
     token = await db.token.get_by_code(code)
@@ -36,19 +57,17 @@ async def unregistered_start(message: Message, state: FSMContext, bot: Bot) -> N
         role=access_type_to_user_role[token.access_type],
     )
 
-    if created:
-        await db.token.close(token=token, user=user)
+    await db.token.close(token=token, user=user)
 
-    if user.role is UserRole.IS_FREEZE:
-        await db.user.update(
+    if not created:
+        role = access_type_to_user_role[token.access_type]
+        user = await db.user.update(
             user=user,
-            role=access_type_to_user_role[token.access_type],
+            role=role,
+            **({'provider_status': UserProviderStatus.INACTIVE} if role is UserRole.PROVIDER else {}),
         )
-        await db.token.close(token=token, user=user)
 
-    await message.answer(
-        text='Добро пожаловать в бота!\nНажмите /start для открытия меню',
-    )
+    return await get_menu_by_role(message, state, user.role)
 
 
 @router.message(Command('freeze'))

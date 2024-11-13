@@ -5,11 +5,11 @@ from aiogram.fsm.context import FSMContext
 
 from src import config
 from src.database import db
-from src.database.enums import UserProviderStatus, CheckStatus, provider_status_to_text
+from src.database.enums import UserProviderStatus, CheckStatus, provider_status_to_text, order_bank_to_text
 from src.database.enums.order import OrderStatus
 from src.filters.role import ProviderFilter
 from src.keyboards import provider as kb
-from src.states.provider import RejectOrderState, CancelOrderState, DisputeOrderState, ConfirmOrderState
+from src.states.provider import RejectOrderState, DisputeOrderState, ConfirmOrderState
 from src.utils.check.tink import TinkCheck, BaseCheckException
 from src.utils.edit_message import EditMessage
 from src.utils.notifier import admin_notify
@@ -66,7 +66,7 @@ async def accept_order(call: CallbackQuery, state: FSMContext) -> None:
 
     await EditMessage(call)(
         text=f'Заявка №{order.id} принята\n'
-            f'Банк: <b>{order.bank}</b>\n'
+            f'Банк: <b>{order_bank_to_text[order.bank]}</b>\n'
             f'Номер карты (телефона): <code>{order.card}</code>\n'
             f'Сумма: <code>{order.amount}</code>',
         reply_markup=kb.finish_order(order.id),
@@ -80,7 +80,7 @@ async def finish_order(call: CallbackQuery, state: FSMContext) -> None:
     await state.set_state(ConfirmOrderState.check)
 
     await EditMessage(call)(
-        text=f'{call.message.text}\n\n<b>Пришлите ссылку на чек</b>',
+        text=f'{call.message.html_text}\n\n<b>Пришлите ссылку на чек</b>',
     )
 
 
@@ -104,6 +104,11 @@ async def get_check(message: Message, state: FSMContext, bot: Bot) -> None:
         return await message.answer(
             text='<b>Чек не прошел проверку, пожалуйста проверьте реквезиты и '
                 f'скиньте чек ещё раз</b>\n\n<i>{e.message}</i>',
+        )
+
+    if await db.check.check_exists_by_url(check.url):
+        return await message.answer(
+            text=f'Чек <i>{check.url}</i> уже был принят',
         )
 
     current_amount = state_data.get('current_amount', 0) + check.amount
