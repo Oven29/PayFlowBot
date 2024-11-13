@@ -74,7 +74,7 @@ async def update(
     """
     async with base_config.database:
         if order is None:
-            order = await get(id=order_id)
+            order = await get(order_id=order_id)
 
         await order.update(**kwargs)
 
@@ -99,7 +99,7 @@ async def reject(
     """
     async with base_config.database:
         if order is None:
-            order = await get(id=order_id)
+            order = await get(order_id=order_id)
 
         await RejectOrder.objects.create(
             order=order,

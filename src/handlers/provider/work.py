@@ -62,7 +62,11 @@ async def reject_order_reason(message: Message, state: FSMContext) -> None:
 @router.callback_query(F.data.startswith('accept-order'))
 async def accept_order(call: CallbackQuery, state: FSMContext) -> None:
     _, order_id = call.data.split()
-    order = await db.order.get(order_id=int(order_id))
+    user = await db.user.get(user_id=call.from_user.id)
+    order = await db.order.update(
+        order_id=int(order_id),
+        provider=user,
+    )
 
     await EditMessage(call)(
         text=f'Заявка №{order.id} принята\n'
@@ -155,7 +159,7 @@ async def get_check(message: Message, state: FSMContext, bot: Bot) -> None:
     )
     user = await db.user.update(
         user=order.provider,
-        provider_staus=UserProviderStatus(state_data.get('status', UserProviderStatus.INACTIVE.value)),
+        provider_status=UserProviderStatus(state_data.get('status', UserProviderStatus.INACTIVE.value)),
         balance=order.provider.calculate_balance(check.amount),
     )
     provider_orders = await db.order.get_user_orders(provider_id=message.from_user.id)
@@ -164,7 +168,7 @@ async def get_check(message: Message, state: FSMContext, bot: Bot) -> None:
         text=f'Заявка <b>{order.title}</b> закрыта{note}\n\n'
             f'🟩 Смена продолжается <b>{provider_status_to_text[user.provider_status]}</b>\n'
             f'Баланс: {user.balance}\n'
-            f'Диспут баланс: {sum(order.amount for order in provider_orders in order.status is OrderStatus.DISPUTE)}',
+            f'Диспут баланс: {sum(order.amount for order in provider_orders if order.status is OrderStatus.DISPUTE)}',
     )
     await bot.send_message(
         chat_id=order.provider.user_id,
@@ -196,7 +200,7 @@ async def create_dispute_reason(message: Message, state: FSMContext, bot: Bot) -
     )
     user = await db.user.update(
         user=order.provider,
-        provider_staus=UserProviderStatus(state_data.get('status', UserProviderStatus.INACTIVE.value)),
+        provider_status=UserProviderStatus(state_data.get('status', UserProviderStatus.INACTIVE.value)),
     )
     provider_orders = await db.order.get_user_orders(provider_id=message.from_user.id)
 

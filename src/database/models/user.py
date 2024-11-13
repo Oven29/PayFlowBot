@@ -53,4 +53,4 @@ class User(Model):
             f'<b>Общий объём обработанных денег:</b> {sum(el.amount for el in completed_orders)}'
 
     def calculate_balance(self, order_amount: int) -> int:
-        return self.balance + order_amount * (self.percent / 100)
+        return self.balance + order_amount * (100 + self.commission / 100)

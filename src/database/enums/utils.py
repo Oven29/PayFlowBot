@@ -39,6 +39,7 @@ provider_status_to_text = {
     UserProviderStatus.ACTIVE_TINK: 'Тинькофф',
     UserProviderStatus.ACTIVE_INTER: 'МежБанк',
     UserProviderStatus.INACTIVE: 'Неактивен',
+    UserProviderStatus.BUSY: 'Есть активная заявка',
 }
 
 order_bank_to_provider_status = {
