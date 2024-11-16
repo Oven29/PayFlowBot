@@ -1,8 +1,11 @@
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
-from .common import cancel, cancel_btn, in_menu, in_menu_btn
+from .common import cancel, cancel_btn
 from src.database.enums import order_bank_to_text
 
+
+in_menu_btn = InlineKeyboardButton(text='🔝 В меню', callback_data='operator-menu')
+in_menu = InlineKeyboardMarkup(inline_keyboard=[[in_menu_btn]])
 
 select_bank = InlineKeyboardMarkup(inline_keyboard=[
     [InlineKeyboardButton(text=text, callback_data=f'select-bank {bank.value}')]

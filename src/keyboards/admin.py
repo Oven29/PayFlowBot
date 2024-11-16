@@ -1,15 +1,17 @@
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
-from .common import cancel_btn, cancel, in_menu_btn, in_menu
+from .common import cancel_btn, cancel
 from src.database.enums import UserRole, user_role_to_text
 
+
+in_menu_btn = InlineKeyboardButton(text='🔝 В меню', callback_data='admin-menu')
+in_menu = InlineKeyboardMarkup(inline_keyboard=[[in_menu_btn]])
 
 participants_menu = InlineKeyboardMarkup(inline_keyboard=[
     [InlineKeyboardButton(text='➕ Добавить участника', callback_data='add-participant-menu')],
     [InlineKeyboardButton(text='Активные участники', callback_data='active-participants')],
     [in_menu_btn],
 ])
-
 
 add_participant = InlineKeyboardMarkup(inline_keyboard=[
     [InlineKeyboardButton(text=text, callback_data=f'add-participant {role.value}')]

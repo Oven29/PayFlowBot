@@ -1,8 +1,11 @@
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
-from .common import cancel_btn, cancel, in_menu_btn, in_menu
+from .common import cancel_btn, cancel
 from src.database.enums import UserProviderStatus
 
+
+in_menu_btn = InlineKeyboardButton(text='🔝 В меню', callback_data='provider-menu')
+in_menu = InlineKeyboardMarkup(inline_keyboard=[[in_menu_btn]])
 
 select_status = InlineKeyboardMarkup(inline_keyboard=[
     [InlineKeyboardButton(text='Тинькофф', callback_data=f'select-status {UserProviderStatus.ACTIVE_TINK.value}')],

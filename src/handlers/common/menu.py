@@ -14,7 +14,7 @@ router = Router(name=__name__)
 
 
 @router.message(Command('admin'), AdminFilter())
-@router.callback_query(F.data.in_({'cancel', 'main-menu'}), AdminFilter())
+@router.callback_query(F.data.in_({'cancel', 'main-menu', 'admin-menu'}), AdminFilter())
 async def admin_menu(event: Message | CallbackQuery, state: FSMContext) -> None:
     await state.clear()
     await EditMessage(event)(
@@ -24,7 +24,7 @@ async def admin_menu(event: Message | CallbackQuery, state: FSMContext) -> None:
 
 
 @router.message(Command('operator'), OperatorFilter())
-@router.callback_query(F.data.in_({'cancel', 'main-menu'}), OperatorFilter())
+@router.callback_query(F.data.in_({'cancel', 'main-menu', 'operator-menu'}), OperatorFilter())
 async def operator_menu(event: Message | CallbackQuery, state: FSMContext) -> None:
     await state.clear()
     orders = await db.order.get_user_orders(opearator_id=event.from_user.id)
@@ -45,7 +45,7 @@ async def operator_menu(event: Message | CallbackQuery, state: FSMContext) -> No
 
 
 @router.message(Command('provider'), ProviderFilter())
-@router.callback_query(F.data.in_({'cancel', 'main-menu'}), ProviderFilter())
+@router.callback_query(F.data.in_({'cancel', 'main-menu', 'provider-menu'}), ProviderFilter())
 async def provider_menu(event: Message | CallbackQuery, state: FSMContext) -> None:
     await state.clear()
     user = await db.user.get(user_id=event.from_user.id)
@@ -75,7 +75,7 @@ async def provider_menu(event: Message | CallbackQuery, state: FSMContext) -> No
 
 
 @router.message(Command('manager'), ManagerFilter())
-@router.callback_query(F.data.in_({'cancel', 'main-menu'}), ManagerFilter())
+@router.callback_query(F.data.in_({'cancel', 'main-menu', 'manager-menu'}), ManagerFilter())
 async def manager_menu(event: Message | CallbackQuery, state: FSMContext) -> None:
     await state.clear()
     await EditMessage(event)(
