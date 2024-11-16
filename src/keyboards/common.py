@@ -30,3 +30,9 @@ confirm_remove_account = InlineKeyboardMarkup(inline_keyboard=[
     [InlineKeyboardButton(text='❗ Да, удалить', callback_data='confirm-remove-account')],
     [InlineKeyboardButton(text='❌ Отмена', callback_data='main-menu')],
 ])
+
+
+def update_order_info(order_id: int) -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text='🔁 Обновить информацию', callback_data=f'update-order-info {order_id}')],
+    ])

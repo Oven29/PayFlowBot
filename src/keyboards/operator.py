@@ -1,6 +1,6 @@
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
-from .common import cancel, cancel_btn
+from .common import cancel, cancel_btn, update_order_info
 from src.database.enums import OrderBank, order_bank_to_text
 
 

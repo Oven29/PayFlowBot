@@ -82,3 +82,17 @@ async def manager_menu(event: Message | CallbackQuery, state: FSMContext) -> Non
         text='Меню менеджера',
         reply_markup=kb.manager_menu,
     )
+
+
+@router.callback_query(F.data.startswith('update-order-info'))
+async def update_order_info(call: CallbackQuery) -> None:
+    _, order_id = call.data.split()
+    order = await db.order.get(order_id=int(order_id))
+
+    try:
+        await call.message.edit_text(
+            text=order.description,
+            reply_markup=kb.update_order_info(order.id),
+        )
+    except:
+        pass

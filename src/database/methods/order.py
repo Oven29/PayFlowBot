@@ -133,7 +133,7 @@ async def search(
         if not status is None:
             filter_kwargs['status'] = status
         if search_query.strip():
-            filter_kwargs['card__contains'] = filter_kwargs['operator__username__contains'] =\
+            filter_kwargs['card__contains'] = filter_kwargs['uid__contains'] = filter_kwargs['operator__username__contains'] =\
                 filter_kwargs['provider__username__contains'] = filter_kwargs['id__contains'] = search_query
 
         return await Order.objects.select_related([

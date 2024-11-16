@@ -1,4 +1,4 @@
-from aiogram import Router, F
+from aiogram import Bot, F, Router
 from aiogram.types import Message, CallbackQuery
 from aiogram.fsm.context import FSMContext
 
@@ -89,7 +89,7 @@ async def wrong_amount(message: Message) -> None:
 
 
 @router.callback_query(F.data == 'confirm-add-order')
-async def confirm_add_order(call: CallbackQuery, state: FSMContext) -> None:
+async def confirm_add_order(call: CallbackQuery, state: FSMContext, bot: Bot) -> None:
     data = await state.get_data()
 
     user = await db.user.get(
@@ -107,4 +107,10 @@ async def confirm_add_order(call: CallbackQuery, state: FSMContext) -> None:
     await call.message.edit_text(
         text=f'Заявка <b>{order.title}</b> создана',
         reply_markup=kb.order_created(order.bank),
+    )
+
+    await bot.send_message(
+        chat_id=user.user_id,
+        text=order.description,
+        reply_markup=kb.update_order_info(order.id),
     )

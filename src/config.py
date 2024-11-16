@@ -25,3 +25,4 @@ BOT_USERNAME: Optional[str] = ...
 DATABASE_URL: Final[str] = f'sqlite:///' + os.path.join(data_dir, 'database.db')
 
 OVERPAYEMNT_CHAT_ID: Final[int] = os.getenv('OVERPAYEMNT_CHAT_ID', -1)
+ORDER_CHAT_ID: Final[int] = os.getenv('ORDER_CHAT_ID', -1)
