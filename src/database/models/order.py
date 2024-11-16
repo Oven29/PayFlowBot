@@ -12,6 +12,7 @@ class Order(Model):
     ormar_config = base_config.copy(tablename='orders')
     id: int = Integer(primary_key=True)
 
+    uid: str = String(max_length=32, nullable=True)
     amount: float = Float()
     bank: OrderBank = Enum(enum_class=OrderBank)
     card: str = String(max_length=16)
@@ -24,7 +25,7 @@ class Order(Model):
 
     @pydantic.computed_field()
     def title(self) -> str:
-        return f'№{self.id} {self.amount}₽'
+        return f'№{self.uid or self.id} {self.amount}₽'
 
     @pydantic.computed_field()
     def description(self) -> str:
@@ -34,7 +35,7 @@ class Order(Model):
         return res
 
     def get_message(self, role: UserRole) -> str:
-        res = f'Заявка №<i>{self.id}</i> от {self.created_date}\n\n' \
+        res = f'Заявка №<i>{self.uid or self.id}</i> от {self.created_date}\n\n' \
             f'<b>Сумма:</b> <code>{self.amount}</code>\n' \
             f'<b>Номер карты:</b> {self.card}\n' \
             f'<b>Банк:</b> {order_bank_to_text[self.bank]}\n' \
