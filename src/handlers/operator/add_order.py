@@ -28,9 +28,20 @@ async def add_order(call: CallbackQuery) -> None:
 async def select_bank(call: CallbackQuery, state: FSMContext) -> None:
     _, bank = call.data.split()
     await state.update_data(bank=bank)
-    await state.set_state(AddOrderState.card)
+    await state.set_state(AddOrderState.uid)
 
     await call.message.edit_text(
+        text='Введите номер заявки',
+        reply_markup=kb.cancel,
+    )
+
+
+@router.message(F.text, AddOrderState.uid)
+async def add_order_uid(message: Message, state: FSMContext) -> None:
+    await state.update_data(uid=message.text)
+    await state.set_state(AddOrderState.card)
+
+    await message.answer(
         text='Введите карту (номер телефона)',
         reply_markup=kb.cancel,
     )
