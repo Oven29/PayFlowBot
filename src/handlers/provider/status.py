@@ -4,8 +4,7 @@ from aiogram.types import Message, CallbackQuery
 from aiogram.fsm.context import FSMContext
 
 from src.database import db
-from src.database.enums import UserProviderStatus, provider_status_to_text
-from src.database.enums.user import UserRole
+from src.database.enums import UserRole, UserProviderStatus, provider_status_to_text, order_bank_to_text
 from src.keyboards import provider as kb
 from src.utils.edit_message import EditMessage
 from src.utils.distribute_order import go_on_shift
@@ -67,9 +66,23 @@ async def turn_on_status(call: CallbackQuery, state: FSMContext) -> None:
 @router.callback_query(F.data == 'turn-off-status')
 @router.message(Command('turn_off'))
 async def turn_off_status(event: Message | CallbackQuery, state: FSMContext) -> None:
+    user = await db.user.get(user_id=event.from_user.id)
+
+    if user.provider_status is UserProviderStatus.BUSY:
+        state_data = await state.get_data()
+        order = await db.order.get(order_id=state_data['order_id'])
+        return await EditMessage(event)(
+            text='<b>Есть незакрытая заявка!</b>\n\n'
+                f'Заявка №{order.id} принята\n'
+                f'Банк: <b>{order_bank_to_text[order.bank]}</b>\n'
+                f'Номер карты (телефона): <code>{order.card}</code>\n'
+                f'Сумма: <code>{order.amount}</code>',
+            reply_markup=kb.finish_order(order.id),
+        )
+
     await state.clear()
     await db.user.update(
-        user_id=event.from_user.id,
+        user=user,
         provider_status=UserProviderStatus.INACTIVE,
     )
 

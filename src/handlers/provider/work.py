@@ -67,6 +67,7 @@ async def accept_order(call: CallbackQuery, state: FSMContext) -> None:
         order_id=int(order_id),
         provider=user,
     )
+    await state.update_data(order_id=order.id)
 
     await EditMessage(call)(
         text=f'Заявка №{order.id} принята\n'
@@ -79,8 +80,8 @@ async def accept_order(call: CallbackQuery, state: FSMContext) -> None:
 
 @router.callback_query(F.data.startswith('finish-order'))
 async def finish_order(call: CallbackQuery, state: FSMContext) -> None:
-    _, order_id = call.data.split()
-    await state.update_data(order_id=int(order_id))
+    # _, order_id = call.data.split()
+    # await state.update_data(order_id=int(order_id))
     await state.set_state(ConfirmOrderState.check)
 
     await EditMessage(call)(
