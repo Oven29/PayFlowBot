@@ -106,5 +106,5 @@ async def confirm_add_order(call: CallbackQuery, state: FSMContext) -> None:
     await state.clear()
     await call.message.edit_text(
         text=f'Заявка <b>{order.title}</b> создана',
-        reply_markup=kb.in_menu,
+        reply_markup=kb.order_created(order.bank),
     )
