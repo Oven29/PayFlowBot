@@ -74,7 +74,7 @@ async def add_participant_input(message: Message, state: FSMContext) -> None:
     )
 
     await message.answer(
-        text=f'<pre><code>{token.link}</code></pre>\n\n'  # <pre><code>{token.code}</code></pre>\n\n'
+        text=f'<code>{token.link}</code>\n\n'
             f'<i>Отправьте пользователю ссылку или код, чтобы назначить его <b>{user_role_to_text[user_role]}</b></i>\n\n'
             '/start - Вернуться в меню',
     )

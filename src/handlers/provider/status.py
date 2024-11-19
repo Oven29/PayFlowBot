@@ -70,15 +70,20 @@ async def turn_off_status(event: Message | CallbackQuery, state: FSMContext) -> 
 
     if user.provider_status is UserProviderStatus.BUSY:
         state_data = await state.get_data()
-        order = await db.order.get(order_id=state_data['order_id'])
-        return await EditMessage(event)(
-            text='<b>Есть незакрытая заявка!</b>\n\n'
-                f'Заявка №{order.id} принята\n'
-                f'Банк: <b>{order_bank_to_text[order.bank]}</b>\n'
-                f'Номер карты (телефона): <code>{order.card}</code>\n'
-                f'Сумма: <code>{order.amount}</code>',
-            reply_markup=kb.finish_order(order.id),
-        )
+        if 'order_id' in state_data:
+            order = await db.order.get(order_id=state_data['order_id'])
+        else:
+            order = await db.order.get_current(provider_id=event.from_user.id)
+
+        if not order is None:
+            return await EditMessage(event)(
+                text='<b>Есть незакрытая заявка!</b>\n\n'
+                    f'Заявка №{order.id} принята\n'
+                    f'Банк: <b>{order_bank_to_text[order.bank]}</b>\n'
+                    f'Номер карты (телефона): <code>{order.card}</code>\n'
+                    f'Сумма: <code>{order.amount}</code>',
+                reply_markup=kb.finish_order(order.id),
+            )
 
     await state.clear()
     await db.user.update(

@@ -47,7 +47,6 @@ async def operator_menu(event: Message | CallbackQuery, state: FSMContext) -> No
 @router.message(Command('provider'), ProviderFilter())
 @router.callback_query(F.data.in_({'cancel', 'main-menu', 'provider-menu'}), ProviderFilter())
 async def provider_menu(event: Message | CallbackQuery, state: FSMContext) -> None:
-    await state.clear()
     user = await db.user.get(user_id=event.from_user.id)
 
     if not user.provider_status in (UserProviderStatus.INACTIVE, UserProviderStatus.NO_PROVIDER):

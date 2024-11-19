@@ -209,7 +209,7 @@ async def create_dispute_reason(message: Message, state: FSMContext, bot: Bot) -
         text=f'Создан диспут по заявке <b>{order.title}</b>\n\n'
             f'🟩 Смена продолжается <b>{provider_status_to_text[user.provider_status]}</b>\n'
             f'Баланс: {user.balance}\n'
-            f'Диспут баланс: {sum(order.amount for order in provider_orders in order.status is OrderStatus.DISPUTE)}',
+            f'Диспут баланс: {sum(order.amount for order in provider_orders if order.status is OrderStatus.DISPUTE)}',
         )
     await bot.send_message(
         chat_id=order.operator.user_id,

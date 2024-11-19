@@ -193,3 +193,28 @@ async def select(
         return await Order.objects.select_related([
             Order.operator, Order.provider, 'checks',
         ]).filter(**kwargs).all()
+
+
+async def get_current(
+    operator_id: Optional[int] = None,
+    provider_id: Optional[int] = None,
+) -> Optional[Order]:
+    """Get current order
+
+    Args:
+        operator_id (Optional[int]): Operator Telegram ID. Default None.
+        provider_id (Optional[int]): Provider Telegram ID. Default None.
+
+    Returns:
+        Optional[Order]: Order
+    """
+    filters = {'status': OrderStatus.PROCESSING}
+    if operator_id:
+        filters['operator__user_id'] = operator_id
+    if provider_id:
+        filters['provider__user_id'] = provider_id
+
+    async with base_config.database:
+        return await Order.objects.select_related([
+            Order.operator, Order.provider, 'checks',
+        ]).filter(**filters).first()
