@@ -15,7 +15,7 @@ participants_menu = InlineKeyboardMarkup(inline_keyboard=[
 
 add_participant = InlineKeyboardMarkup(inline_keyboard=[
     [InlineKeyboardButton(text=text, callback_data=f'add-participant {role.value}')]
-      for role, text in user_role_to_text.items()
+      for role, text in user_role_to_text.items() if not role is UserRole.OWNER
 ] + [
     [InlineKeyboardButton(text='🔙 Назад', callback_data='admin participants'), in_menu_btn],
 ])
