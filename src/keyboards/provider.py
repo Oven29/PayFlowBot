@@ -1,6 +1,9 @@
+from typing import List
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
+
 from .common import cancel_btn, cancel
+from src.database.models.order import Order
 from src.database.enums import UserProviderStatus
 
 
@@ -40,4 +43,19 @@ def finish_order(order_id: int) -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(inline_keyboard=[
         [InlineKeyboardButton(text='✅ Ввести чек', callback_data=f'finish-order {order_id}')],
         [InlineKeyboardButton(text='! Открыть диспут', callback_data=f'create-dispute {order_id}')],
+    ])
+
+
+def dispute_list(orders: List[Order]) -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text=order.title[:128], callback_data=f'dispute-order {order.id}') for order in orders],
+    ] + [
+        [in_menu_btn],
+    ])
+
+
+def dispute_order(order_id: int) -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text='Отменить диспут', callback_data=f'cancel-dispute {order_id}')],
+        [InlineKeyboardButton(text='🔙 Назад', callback_data='provider-disputes'), in_menu_btn],
     ])
