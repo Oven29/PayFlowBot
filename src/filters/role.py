@@ -12,18 +12,12 @@ class RoleFilter(BaseFilter):
     def __init__(
         self,
         *roles: Tuple[UserRole],
-        pass_user: bool = False
     ) -> None:
         self.roles = tuple(type(role) for role in roles)
-        self.pass_user = pass_user
 
-    async def __call__(self, event: TelegramObject) -> bool | Dict[str, Any]:
+    async def __call__(self, event: TelegramObject) -> bool:
         user = await db.user.get(user_id=event.from_user.id)
-        if not user or not isinstance(user.role, self.roles):
-            return False
-        if self.pass_user:
-            return {'user': user}
-        return True
+        return user and isinstance(user.role, self.roles)
 
 
 class OwnerFilter(RoleFilter):

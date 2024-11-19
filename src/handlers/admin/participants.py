@@ -90,11 +90,15 @@ async def active_participants(call: CallbackQuery) -> None:
 
 @router.inline_query(F.query.startswith('participant'))
 async def participant_inline(query: InlineQuery, state: FSMContext) -> None:
-    try:
-        _, role, *search_query = query.query.split()
-    except ValueError:
-        logger.warning(f'Invalid query: "{query.query}"')
-        return
+    if query.query == 'participant':
+        role = ''
+        search_query = []
+    else:
+        try:
+            _, role, *search_query = query.query.split()
+        except ValueError:
+            logger.warning(f'Invalid query: "{query.query}"')
+            return
 
     offset = query.offset or 0
     users = await db.user.search(

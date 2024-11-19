@@ -17,7 +17,7 @@ from src.states.admin import EditOrderState
 
 
 router = Router(name=__name__)
-orders_filter = RoleFilter(UserRole.OWNER, UserRole.ADMIN, UserRole.OPERATOR, pass_user=True)
+orders_filter = RoleFilter(UserRole.OWNER, UserRole.ADMIN, UserRole.OPERATOR)
 router.message.filter(orders_filter)
 router.callback_query.filter(orders_filter)
 
@@ -33,12 +33,18 @@ async def admin_orders_menu(call: CallbackQuery) -> None:
 
 
 @router.inline_query(F.query.startswith('order'))
-async def order_inline(query: InlineQuery, user: db.user.User) -> None:
-    try:
-        _, status, *search_query = query.query.split()
-    except ValueError:
-        logger.warning(f'Invalid query: "{query.query}"')
-        return
+async def order_inline(query: InlineQuery) -> None:
+    user = await db.user.get(user_id=query.from_user.id)
+
+    if query.query == 'order':
+        status = ''
+        search_query = []
+    else:
+        try:
+            _, status, *search_query = query.query.split()
+        except ValueError:
+            logger.warning(f'Invalid query: "{query.query}"')
+            return
 
     offset = query.offset or 0
     orders = await db.order.search(
@@ -65,7 +71,9 @@ async def order_inline(query: InlineQuery, user: db.user.User) -> None:
 
 
 @router.callback_query(F.data.startswith('order-menu'))
-async def order_menu(call: CallbackQuery, state: FSMContext, user: db.user.User) -> None:
+async def order_menu(call: CallbackQuery, state: FSMContext) -> None:
+    user = await db.user.get(user_id=call.from_user.id)
+
     await state.clear()
     _, order_id = call.data.split()
     order = await db.order.get(order_id=int(order_id))
@@ -77,7 +85,9 @@ async def order_menu(call: CallbackQuery, state: FSMContext, user: db.user.User)
 
 
 @router.callback_query(F.data.startswith('move-order'))
-async def move_order(call: CallbackQuery, user: db.user.User) -> None:
+async def move_order(call: CallbackQuery) -> None:
+    user = await db.user.get(user_id=call.from_user.id)
+
     _, new_status, order_id = call.data.split()
     order = await db.order.update(
         order_id=int(order_id),
@@ -91,7 +101,9 @@ async def move_order(call: CallbackQuery, user: db.user.User) -> None:
 
 
 @router.callback_query(F.data.startswith('delete-order'))
-async def delete_order(call: CallbackQuery, user: db.user.User) -> None:
+async def delete_order(call: CallbackQuery) -> None:
+    user = await db.user.get(user_id=call.from_user.id)
+
     _, order_id = call.data.split()
     order = await db.order.get(order_id=int(order_id))
 
@@ -114,7 +126,9 @@ async def confirm_delete_order(call: CallbackQuery) -> None:
 
 
 @router.callback_query(F.data.startswith('edit-order'))
-async def edit_order(call: CallbackQuery, user: db.user.User) -> None:
+async def edit_order(call: CallbackQuery) -> None:
+    user = await db.user.get(user_id=call.from_user.id)
+
     _, order_id = call.data.split()
     order = await db.order.get(order_id=int(order_id))
 
@@ -125,7 +139,9 @@ async def edit_order(call: CallbackQuery, user: db.user.User) -> None:
 
 
 @router.callback_query(F.data.startswith('edit-amount-order'))
-async def edit_order_amount(call: CallbackQuery, state: FSMContext, user: db.user.User) -> None:
+async def edit_order_amount(call: CallbackQuery, state: FSMContext) -> None:
+    user = await db.user.get(user_id=call.from_user.id)
+
     _, order_id = call.data.split()
     order = await db.order.get(order_id=int(order_id))
     await state.set_state(EditOrderState.amount)
@@ -153,7 +169,9 @@ async def set_order_amount(message: Message, state: FSMContext) -> None:
 
 
 @router.callback_query(F.data.startswith('edit-card-order'))
-async def edit_order_card(call: CallbackQuery, state: FSMContext, user: db.user.User) -> None:
+async def edit_order_card(call: CallbackQuery, state: FSMContext) -> None:
+    user = await db.user.get(user_id=call.from_user.id)
+
     _, order_id = call.data.split()
     order = await db.order.get(order_id=int(order_id))
     await state.set_state(EditOrderState.card)

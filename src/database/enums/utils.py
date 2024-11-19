@@ -28,6 +28,7 @@ order_bank_to_text = {
 }
 
 user_role_to_text = {
+    UserRole.OWNER: 'Владелец бота',
     UserRole.ADMIN: 'Админ',
     UserRole.MANAGER: 'Менеджер',
     UserRole.OPERATOR: 'Оператор',
