@@ -92,9 +92,13 @@ async def finish_order(call: CallbackQuery, state: FSMContext) -> None:
 @router.message(F.text, ConfirmOrderState.check)
 async def get_check(message: Message, state: FSMContext, bot: Bot) -> None:
     state_data = await state.get_data()
-    order = await db.order.get(
-        order_id=state_data['order_id'],
-    )
+    if 'order_id' in state_data:
+        order = await db.order.get(
+            order_id=state_data['order_id'],
+        )
+    else:
+        order = await db.order.get_current(provider_id=message.from_user.id)
+
     check = TinkCheck(message.text, order.card)
 
     try:

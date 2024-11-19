@@ -4,7 +4,7 @@ from aiogram.types import Message, CallbackQuery
 from aiogram.fsm.context import FSMContext
 
 from src.database import db
-from src.database.enums import OrderStatus, UserProviderStatus, provider_status_to_text
+from src.database.enums import UserRole, OrderStatus, UserProviderStatus, provider_status_to_text
 from src.keyboards import common as kb
 from src.utils.edit_message import EditMessage
 from src.filters.role import AdminFilter, ManagerFilter, OperatorFilter, ProviderFilter
@@ -90,7 +90,7 @@ async def update_order_info(call: CallbackQuery) -> None:
 
     try:
         await call.message.edit_text(
-            text=order.description,
+            text=order.get_message(UserRole.ADMIN),
             reply_markup=kb.update_order_info(order.id),
         )
     except:
