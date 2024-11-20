@@ -2,18 +2,19 @@ from aiogram import Bot, F, Router
 from aiogram.types import Message, CallbackQuery
 from aiogram.fsm.context import FSMContext
 
+from src import config
 from src.database import db
-from src.database.enums import OrderBank, order_bank_to_text
+from src.database.enums import UserRole, OrderBank, order_bank_to_text
 from src.keyboards import operator as kb
 from src.filters.common import amount_filter, number_filter
-from src.filters.role import AdminFilter
+from src.filters.role import OperatorFilter
 from src.states.operator import AddOrderState
 from src.utils.distribute_order import distribute_order
 
 
 router = Router(name=__name__)
-router.message.filter(AdminFilter())
-router.callback_query.filter(AdminFilter())
+router.message.filter(OperatorFilter())
+router.callback_query.filter(OperatorFilter())
 
 
 @router.callback_query(F.data == 'add-order')
@@ -74,6 +75,7 @@ async def add_order_amount(message: Message, state: FSMContext) -> None:
     await message.answer(
         text='Подтвердите создание заявки:\n\n'
             f'Банк: {order_bank_to_text[OrderBank(data["bank"])]}\n'
+            f'Номер: {data["uid"]}\n'
             f'Карта: {data["card"]}\n'
             f'Сумма: {message.text}',
         reply_markup=kb.confirm_adding_order,
@@ -92,14 +94,15 @@ async def wrong_amount(message: Message) -> None:
 async def confirm_add_order(call: CallbackQuery, state: FSMContext, bot: Bot) -> None:
     data = await state.get_data()
 
-    user = await db.user.get(
+    operator = await db.user.get(
         user_id=call.from_user.id,
     )
     order = await db.order.create(
+        uid=data['uid'],
         bank=OrderBank(data['bank']),
         card=data['card'],
         amount=data['amount'],
-        operator=user,
+        operator=operator,
     )
     await distribute_order(order)
 
@@ -110,7 +113,12 @@ async def confirm_add_order(call: CallbackQuery, state: FSMContext, bot: Bot) ->
     )
 
     await bot.send_message(
-        chat_id=user.user_id,
+        chat_id=operator.user_id,
         text=order.description,
+        reply_markup=kb.update_order_info(order.id),
+    )
+    await bot.send_message(
+        chat_id=config.ORDER_CHAT_ID,
+        text=order.get_message(UserRole.ADMIN),
         reply_markup=kb.update_order_info(order.id),
     )

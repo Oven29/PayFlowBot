@@ -1,4 +1,5 @@
-from aiogram import Bot, Router, F
+import logging
+from aiogram import Router, F
 from aiogram.filters import CommandStart, Command
 from aiogram.types import Message, CallbackQuery
 from aiogram.fsm.context import FSMContext
@@ -12,6 +13,8 @@ from src.keyboards import common as kb
 
 
 router = Router(name=__name__)
+
+logger = logging.getLogger(__name__)
 
 
 async def get_menu_by_role(message: Message, state: FSMContext, role: UserRole) -> None:
@@ -45,6 +48,7 @@ async def start_command(message: Message, state: FSMContext) -> None:
 
     code = args[0]
     token = await db.token.get_by_code(code)
+    logger.info(f'Checking token=({token}) by {code=}')
 
     if token is None or not token.check_available(message.from_user.id, message.from_user.username):
         return await message.answer(

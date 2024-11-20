@@ -25,24 +25,21 @@ class Order(Model):
 
     @pydantic.computed_field()
     def title(self) -> str:
-        return f'№{self.uid or self.id} {self.amount}₽'
+        return f'#{self.uid or self.id} {self.amount}₽'
 
     @pydantic.computed_field()
     def description(self) -> str:
-        res = f'{order_bank_to_text[self.bank]} на {self.amount} "{self.card}" от {self.created_date} '
-        if self.provider and self.operator:
-            res += f'провайдер - {self.provider.title} оператор - {self.operator.title}'
-        return res
+        return f'{order_bank_to_text[self.bank]} на {self.amount} "{self.card}" от {self.created_date}'
 
     def get_message(self, role: UserRole) -> str:
-        res = f'Заявка №<i>{self.uid or self.id}</i> от {self.created_date}\n\n' \
+        res = f'Заявка #<i>{self.uid or self.id}</i> от {self.created_date}\n\n' \
             f'<b>Сумма:</b> <code>{self.amount}</code>\n' \
             f'<b>Номер карты:</b> {self.card}\n' \
             f'<b>Банк:</b> {order_bank_to_text[self.bank]}\n' \
             f'<b>Статус:</b> {order_status_to_text[self.status]}\n'
-        if self.operator and not role is UserRole.OPERATOR:
+        if self.operator and role in (UserRole.OWNER, UserRole.ADMIN):
             res += f'<b>Оператор:</b> {self.operator.title}\n'
-        if self.provider and not role is UserRole.PROVIDER:
+        if self.provider and role in (UserRole.OWNER, UserRole.ADMIN):
             res += f'<b>Провайдер:</b> {self.provider.title}\n'
         if self.checks:
             res += '\n\n<b>Чеки:</b>\n' + '\n'.join(f'<code>{el.amount}</code> - {el.url}' for el in self.checks)

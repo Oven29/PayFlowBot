@@ -1,11 +1,13 @@
+from datetime import datetime
 from aiogram import Router, F
-from aiogram.filters import CommandStart, Command, or_f
+from aiogram.filters import Command
 from aiogram.types import Message, CallbackQuery
 from aiogram.fsm.context import FSMContext
 
 from src.database import db
 from src.database.enums import UserRole, OrderStatus, UserProviderStatus, provider_status_to_text
 from src.keyboards import common as kb
+from src.keyboards.provider import finish_order
 from src.utils.edit_message import EditMessage
 from src.filters.role import AdminFilter, ManagerFilter, OperatorFilter, ProviderFilter
 
@@ -50,11 +52,19 @@ async def provider_menu(event: Message | CallbackQuery, state: FSMContext) -> No
     user = await db.user.get(user_id=event.from_user.id)
 
     if not user.provider_status in (UserProviderStatus.INACTIVE, UserProviderStatus.NO_PROVIDER):
-        return await EditMessage(event)(
+        await EditMessage(event, send_message=True)(
             text=f'<b>{provider_status_to_text[user.provider_status]}</b>\n'
                 'Статус 🟩 on\n\nОжидайте, бот будет отправлять Вам заявки\n\n'
                 '<i>Для завершения сессии воспользойтесь командой /turn_off</i>',
         )
+
+        if user.provider_status is UserProviderStatus.BUSY:
+            order = await db.order.get_current(provider_id=event.from_user.id)
+            await EditMessage(event)(
+                text=order.get_message(UserRole.PROVIDER),
+                reply_markup=finish_order(order.id),
+            )
+        return
 
     orders = await db.order.get_user_orders(provider_id=event.from_user.id)
     completed_orders = [order for order in orders if order.status is OrderStatus.COMPLETED]
@@ -90,7 +100,8 @@ async def update_order_info(call: CallbackQuery) -> None:
 
     try:
         await call.message.edit_text(
-            text=order.get_message(UserRole.ADMIN),
+            text=f'{order.get_message(UserRole.ADMIN)}\n'
+                f'Создана <i>{str(datetime.now() - order.created_date)[:-7]}</i> назад',
             reply_markup=kb.update_order_info(order.id),
         )
     except:

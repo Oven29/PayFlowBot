@@ -12,7 +12,6 @@ from src.keyboards import provider as kb
 from src.states.provider import RejectOrderState, DisputeOrderState, ConfirmOrderState
 from src.utils.check.tink import TinkCheck, BaseCheckException
 from src.utils.edit_message import EditMessage
-from src.utils.notifier import admin_notify
 
 
 router = Router(name=__name__)
@@ -70,7 +69,7 @@ async def accept_order(call: CallbackQuery, state: FSMContext) -> None:
     await state.update_data(order_id=order.id)
 
     await EditMessage(call)(
-        text=f'Заявка №{order.id} принята\n'
+        text=f'Заявка #{order.id} принята\n'
             f'Банк: <b>{order_bank_to_text[order.bank]}</b>\n'
             f'Номер карты (телефона): <code>{order.card}</code>\n'
             f'Сумма: <code>{order.amount}</code>',
@@ -80,8 +79,6 @@ async def accept_order(call: CallbackQuery, state: FSMContext) -> None:
 
 @router.callback_query(F.data.startswith('finish-order'))
 async def finish_order(call: CallbackQuery, state: FSMContext) -> None:
-    # _, order_id = call.data.split()
-    # await state.update_data(order_id=int(order_id))
     await state.set_state(ConfirmOrderState.check)
 
     await EditMessage(call)(
@@ -165,9 +162,13 @@ async def get_check(message: Message, state: FSMContext, bot: Bot) -> None:
     user = await db.user.update(
         user=order.provider,
         provider_status=UserProviderStatus(state_data.get('status', UserProviderStatus.INACTIVE.value)),
-        balance=order.provider.calculate_balance(check.amount),
+        balance=order.provider.calculate_balance(order.amount),
     )
     provider_orders = await db.order.get_user_orders(provider_id=message.from_user.id)
+    await db.user.update(
+        user=order.operator,
+        balance=order.operator.calculate_balance(order.amount),
+    )
 
     await message.answer(
         text=f'Заявка <b>{order.title}</b> закрыта{note}\n\n'
@@ -176,9 +177,13 @@ async def get_check(message: Message, state: FSMContext, bot: Bot) -> None:
             f'Диспут баланс: {sum(order.amount for order in provider_orders if order.status is OrderStatus.DISPUTE)}',
     )
     await bot.send_message(
-        chat_id=order.provider.user_id,
+        chat_id=order.operator.user_id,
         text=f'Заявка <b>{order.title}</b> закрыта',
         reply_markup=kb.in_menu,
+    )
+    await bot.send_message(
+        chat_id=config.ORDER_CHAT_ID,
+        text=f'Заявка <b>{order.title}</b> закрыта',
     )
 
 
@@ -220,7 +225,7 @@ async def create_dispute_reason(message: Message, state: FSMContext, bot: Bot) -
         text=f'Создан диспут по заявке <b>{order.title}</b>',
         reply_markup=kb.in_menu,
     )
-    await admin_notify(
+    await bot.send_message(
+        chat_id=config.ORDER_CHAT_ID,
         text=f'Создан диспут по заявке <b>{order.title}</b>',
-        bot=bot,
     )

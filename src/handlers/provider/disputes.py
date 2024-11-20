@@ -25,7 +25,7 @@ async def menu(call: CallbackQuery, state: FSMContext) -> None:
     await EditMessage(call)(
         text=f'<b>Диспуты:</b>\n\n'
             f'Замороженный баланс: {sum(order.amount for order in dispute_orders)}\n'
-            f'Количество дисутов: {len(dispute_orders)} ({round(len(dispute_orders) / len(provider_orders), 2)}%)',
+            f'Количество дисутов: {len(dispute_orders)} ({round(len(dispute_orders) / (len(provider_orders) or 1), 2)}%)',
         reply_markup=kb.dispute_list(dispute_orders),
     )
 
@@ -56,7 +56,7 @@ async def move_order(call: CallbackQuery, state: FSMContext, bot: Bot) -> None:
         if not order is None:
             return await EditMessage(call)(
                 text='<b>Есть незакрытая заявка!</b>\n\n'
-                    f'Заявка №{order.id} принята\n'
+                    f'Заявка #{order.id} принята\n'
                     f'Банк: <b>{order_bank_to_text[order.bank]}</b>\n'
                     f'Номер карты (телефона): <code>{order.card}</code>\n'
                     f'Сумма: <code>{order.amount}</code>',
@@ -75,7 +75,6 @@ async def move_order(call: CallbackQuery, state: FSMContext, bot: Bot) -> None:
     )
 
     await EditMessage(call)(
-        text=f'Заявка <b>{order.title}</b> возвращена в активные'
-            f'\n\n{order.get_message(user.role)}',
+        text=f'Заявка возвращена в активные\n\n{order.get_message(user.role)}',
         reply_markup=kb.finish_order(order.id),
     )

@@ -11,13 +11,13 @@ class RoleFilter(BaseFilter):
 
     def __init__(
         self,
-        *roles: Tuple[UserRole],
+        *roles: UserRole,
     ) -> None:
-        self.roles = tuple(type(role) for role in roles)
+        self.roles = roles
 
     async def __call__(self, event: TelegramObject) -> bool:
         user = await db.user.get(user_id=event.from_user.id)
-        return user and isinstance(user.role, self.roles)
+        return user and user.role in self.roles
 
 
 class OwnerFilter(RoleFilter):

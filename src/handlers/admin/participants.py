@@ -23,6 +23,22 @@ router.callback_query.filter(AdminFilter())
 logger = logging.getLogger(__name__)
 
 
+async def send_placeholder(query: InlineQuery) -> None:
+    await query.answer(
+        results=[InlineQueryResultArticle(
+            id=hashlib.md5(generate_rand_string(8).encode()).hexdigest(),
+            input_message_content=InputTextMessageContent(
+                message_text=f'Ничего не было найдено',
+            ),
+            title='Пользователей нет',
+            description='Ничего не было найдено',
+            reply_markup=kb.in_menu,
+        )],
+        cache_time=5,
+        is_personal=True,
+    )
+
+
 @router.callback_query(F.data == 'admin participants')
 async def admin_participants(call: CallbackQuery) -> None:
     await EditMessage(call)(
@@ -61,7 +77,7 @@ async def add_participant_input(message: Message, state: FSMContext) -> None:
         user_id = int(message.text)
     elif message.text.startswith('@'):
         username = message.text[1:]
-    elif message.text != '-':
+    elif not message.text in ('-', '—'):
         username = message.text
 
     data = await state.get_data()
@@ -106,6 +122,9 @@ async def participant_inline(query: InlineQuery, state: FSMContext) -> None:
         search_query=' '.join(search_query),
         offset=offset,
     )
+
+    if len(users) == 0:
+        return await send_placeholder(query)
 
     await query.answer(
         results=[InlineQueryResultArticle(

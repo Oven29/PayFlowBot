@@ -4,7 +4,7 @@ from .common import cancel_btn, cancel
 from src.database.enums import UserRole, user_role_to_text
 
 
-in_menu_btn = InlineKeyboardButton(text='🔝 В меню', callback_data='admin-menu')
+in_menu_btn = InlineKeyboardButton(text='🔝 В меню', callback_data='main-menu')
 in_menu = InlineKeyboardMarkup(inline_keyboard=[[in_menu_btn]])
 
 participants_menu = InlineKeyboardMarkup(inline_keyboard=[

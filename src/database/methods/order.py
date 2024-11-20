@@ -27,6 +27,7 @@ async def get(
 
 
 async def create(
+    uid: str,
     amount: float,
     bank: OrderBank,
     card: str,
@@ -36,6 +37,7 @@ async def create(
     """Create order
 
     Args:
+        uid (str): Order UID
         amount (float): Order amount
         bank (OrderBank): Order bank
         card (str): Card number
@@ -50,6 +52,7 @@ async def create(
 
     async with base_config.database:
         return await Order.objects.create(
+            uid=uid,
             amount=amount,
             bank=bank,
             card=card,
@@ -137,7 +140,7 @@ async def search(
                 filter_kwargs['provider__username__contains'] = filter_kwargs['id__contains'] = search_query
 
         return await Order.objects.select_related([
-            Order.operator, Order.provider, 'checks',
+            'provider', 'operator', 'checks',
         ]).filter(**filter_kwargs).offset(offset * 50).limit(50).all()
 
 

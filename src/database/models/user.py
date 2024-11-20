@@ -52,5 +52,5 @@ class User(Model):
             f'<b>Кол-во отменённых заявок:</b> {len(canceled_orders)}\n' \
             f'<b>Общий объём обработанных денег:</b> {sum(el.amount for el in completed_orders)}'
 
-    def calculate_balance(self, order_amount: int) -> int:
-        return self.balance + order_amount * (100 + self.commission / 100)
+    def calculate_balance(self, order_amount: float) -> float:
+        return self.balance + order_amount * ((100 + self.commission) / 100)

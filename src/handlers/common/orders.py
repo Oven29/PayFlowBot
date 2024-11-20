@@ -24,6 +24,22 @@ router.callback_query.filter(orders_filter)
 logger = logging.getLogger(__name__)
 
 
+async def send_placeholder(query: InlineQuery) -> None:
+    await query.answer(
+        results=[InlineQueryResultArticle(
+            id=hashlib.md5(generate_rand_string(8).encode()).hexdigest(),
+            input_message_content=InputTextMessageContent(
+                message_text=f'Ничего не было найдено',
+            ),
+            title='Заявок нет',
+            description='Ничего не было найдено',
+            reply_markup=kb.in_menu,
+        )],
+        cache_time=5,
+        is_personal=True,
+    )
+
+
 @router.callback_query(F.data == 'orders')
 async def admin_orders_menu(call: CallbackQuery) -> None:
     await EditMessage(call)(
@@ -51,8 +67,11 @@ async def order_inline(query: InlineQuery) -> None:
         status=OrderStatus._value2member_map_.get(status),
         search_query=' '.join(search_query),
         offset=offset,
-        **({'opeator': user} if user.role is UserRole.OPERATOR else {}),
+        **({'operator': user} if user.role is UserRole.OPERATOR else {}),
     )
+
+    if len(orders) == 0:
+        return await send_placeholder(query)
 
     await query.answer(
         results=[InlineQueryResultArticle(
@@ -120,7 +139,7 @@ async def confirm_delete_order(call: CallbackQuery) -> None:
     await db.order.delete(order_id=int(order_id))
 
     await EditMessage(call)(
-        text=f'Заявка <b>№{order_id}</b> удалена',
+        text=f'Заявка <b>#{order_id}</b> удалена',
         reply_markup=kb.in_menu,
     )
 
