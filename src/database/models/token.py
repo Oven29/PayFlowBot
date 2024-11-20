@@ -21,6 +21,7 @@ class IndividualToken(Model):
     username: Optional[str] = String(max_length=64, nullable=True)
     user_id: Optional[int] = Integer(nullable=True)
     access_type: AccessType = Enum(enum_class=AccessType)
+    manager: Optional[User] = ForeignKey(User, nullable=True, ondelete='CASCADE', related_name='manager')
 
     @pydantic.computed_field()
     def link(self) -> str:

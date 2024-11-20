@@ -58,3 +58,19 @@ async def close(
             activate_date=datetime.now(),
             user=user,
         )
+
+
+async def get_by_user(user: User) -> Optional[IndividualToken]:
+    """Get token by user
+
+    Args:
+        user (User): User
+
+    Returns:
+        Optional[IndividualToken]: Token
+    """
+    async with base_config.database:
+        items = await IndividualToken.objects.filter(user=user).all()
+        if not len(items):
+            return None
+        return items[-1]
