@@ -1,5 +1,5 @@
 import logging
-from aiogram import Router, F
+from aiogram import Bot, Router, F
 from aiogram.types import Message, CallbackQuery
 from aiogram.fsm.context import FSMContext
 
@@ -99,7 +99,7 @@ async def set_participant_balance(message: Message, state: FSMContext) -> None:
 
 
 @router.callback_query(F.data.startswith('disable-provider'))
-async def disable_provider(call: CallbackQuery) -> None:
+async def disable_provider(call: CallbackQuery, bot: Bot) -> None:
     _, user_pk = call.data.split()
     user = await db.user.get(user_pk=int(user_pk))
 
@@ -111,9 +111,14 @@ async def disable_provider(call: CallbackQuery) -> None:
 
     await db.user.update(
         user=user,
-        status=UserProviderStatus.INACTIVE,
+        provider_status=UserProviderStatus.INACTIVE,
     )
     await call.answer(
         text='Пользователь успешно выключен',
         show_alert=True,
+    )
+    await bot.send_message(
+        chat_id=user.user_id,
+        text='Статус 🟥 off',
+        reply_markup=kb.in_menu,
     )

@@ -139,6 +139,8 @@ async def insert_data() -> None:
 if __name__ == '__main__':
     """
         Run this file to insert test data to database
-        Usage: `python -m src.utils.insert_data`
+        Usage: ```
+            python -m src.utils.insert_data
+        ```
     """
     asyncio.run(insert_data())

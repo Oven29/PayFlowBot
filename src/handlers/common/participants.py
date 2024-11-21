@@ -7,7 +7,7 @@ from aiogram.fsm.context import FSMContext
 
 from src.database import db
 from src.database.enums import UserRole, user_role_to_text, user_role_to_access_type
-from src.keyboards import common as kb
+from src.keyboards import participants as kb
 from src.filters.role import RoleFilter
 from src.states.common import AddParticipantState
 from src.utils.edit_message import EditMessage
