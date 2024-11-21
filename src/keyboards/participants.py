@@ -82,7 +82,7 @@ def user_el(user_pk: int, role: int) -> InlineKeyboardMarkup:
 
     keyboard.extend([
         [InlineKeyboardButton(text='Удалить', callback_data=f'delete-participant {user_pk}')],
-        [InlineKeyboardButton(text='🔙 Назад', callback_data=f'active-participant'), in_menu_btn],
+        [InlineKeyboardButton(text='🔙 Назад', callback_data=f'active-participants'), in_menu_btn],
     ])
 
     return InlineKeyboardMarkup(inline_keyboard=keyboard)

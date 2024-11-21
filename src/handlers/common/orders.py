@@ -178,7 +178,7 @@ async def set_order_amount(message: Message, state: FSMContext) -> None:
     await state.clear()
     await db.order.update(
         order_id=data['order_id'],
-        amount=float(message.text),
+        amount=float(message.text.replace(',', '.')),
     )
 
     await message.answer(

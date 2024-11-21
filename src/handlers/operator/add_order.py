@@ -70,7 +70,7 @@ async def wrong_card(message: Message) -> None:
 @router.message(AddOrderState.amount, amount_filter)
 async def add_order_amount(message: Message, state: FSMContext) -> None:
     data = await state.get_data()
-    await state.update_data(amount=float(message.text))
+    await state.update_data(amount=float(message.text.replace(',', '.')))
 
     await message.answer(
         text='Подтвердите создание заявки:\n\n'
