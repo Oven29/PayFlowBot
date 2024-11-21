@@ -15,7 +15,7 @@ class User(Model):
     username: Optional[str] = String(nullable=True, max_length=64)
     reg_date: datetime = DateTime(default=datetime.now)
     role: UserRole = Enum(enum_class=UserRole)
-    balance: int = Integer(default=0)
+    balance: float = Float(default=0)
     commission: float = Float(default=0)
     provider_status: UserProviderStatus = Enum(enum_class=UserProviderStatus, default=UserProviderStatus.NO_PROVIDER)
 
