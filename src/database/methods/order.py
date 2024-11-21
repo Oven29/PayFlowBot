@@ -232,4 +232,4 @@ async def get_current(
     async with base_config.database:
         return await Order.objects.select_related([
             Order.operator, Order.provider, 'checks',
-        ]).filter(**filters).first()
+        ]).filter(**filters).get_or_none()
