@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Optional
+from typing import List, Optional
 
 from ..connect import base_config
 from ..enums import AccessType
@@ -74,3 +74,16 @@ async def get_by_user(user: User) -> Optional[IndividualToken]:
         if not len(items):
             return None
         return items[-1]
+
+
+async def get_by_manager(manager: User) -> List[IndividualToken]:
+    """Get token by manager
+
+    Args:
+        manager (User): Manager
+
+    Returns:
+        List[IndividualToken]: List of tokens
+    """
+    async with base_config.database:
+        return await IndividualToken.objects.filter(manager=manager).all()

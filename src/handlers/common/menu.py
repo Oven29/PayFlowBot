@@ -41,7 +41,7 @@ async def operator_menu(event: Message | CallbackQuery, state: FSMContext) -> No
             f'<b>Кол-во обработанных заявок:</b> {len(completed_orders)}\n'
             f'<b>Кол-во отменённых заявок:</b> {len(cancelled_orders)}\n'
             f'<b>Баланс:</b> {user.balance}\n'
-            f'<b>Комиссия:</b> {user.commission}',
+            f'<b>Комиссия:</b> {user.commission}%',
         reply_markup=kb.operator_menu,
     )
 
@@ -77,7 +77,7 @@ async def provider_menu(event: Message | CallbackQuery, state: FSMContext) -> No
             f'<b>Кол-во обработанных заявок:</b> {len(completed_orders)}\n'
             f'<b>Кол-во отменённых заявок:</b> {len(cancelled_orders)}\n'
             f'<b>Баланс:</b> {user.balance}\n'
-            f'<b>Комиссия:</b> {user.commission}\n'
+            f'<b>Комиссия:</b> {user.commission}%\n'
             f'<b>Замороженный общий баланс всех диспутов:</b> {sum(order.amount for order in disput_orders)}',
         reply_markup=kb.provider_menu,
     )
@@ -87,8 +87,15 @@ async def provider_menu(event: Message | CallbackQuery, state: FSMContext) -> No
 @router.callback_query(F.data.in_({'cancel', 'main-menu', 'manager-menu'}), ManagerFilter())
 async def manager_menu(event: Message | CallbackQuery, state: FSMContext) -> None:
     await state.clear()
+    user = await db.user.get(user_id=event.from_user.id)
+    invites = await db.token.get_by_manager(manager=user)
+    invites = [el for el in invites if not el.user is None]
+
     await EditMessage(event)(
-        text='Меню менеджера',
+        text='<b>Меню менеджера</b>\n\n'
+            f'<b>Баланс:</b> {user.balance}\n'
+            f'<b>Комиссия:</b> {user.commission}%\n'
+            f'<b>Количество приглашенных пользователей:</b> {len(invites)}',
         reply_markup=kb.manager_menu,
     )
 

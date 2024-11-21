@@ -159,7 +159,7 @@ async def get_check(message: Message, state: FSMContext, bot: Bot) -> None:
         order=order,
         status=OrderStatus.COMPLETED,
     )
-    user = await db.user.update(
+    provider = await db.user.update(
         user=order.provider,
         provider_status=UserProviderStatus(state_data.get('status', UserProviderStatus.INACTIVE.value)),
         balance=order.provider.calculate_balance(order.amount),
@@ -172,8 +172,8 @@ async def get_check(message: Message, state: FSMContext, bot: Bot) -> None:
 
     await message.answer(
         text=f'Заявка <b>{order.title}</b> закрыта{note}\n\n'
-            f'🟩 Смена продолжается <b>{provider_status_to_text[user.provider_status]}</b>\n'
-            f'Баланс: {user.balance}\n'
+            f'🟩 Смена продолжается <b>{provider_status_to_text[provider.provider_status]}</b>\n'
+            f'Баланс: {provider.balance}\n'
             f'Диспут баланс: {sum(order.amount for order in provider_orders if order.status is OrderStatus.DISPUTE)}',
     )
     await bot.send_message(
@@ -185,6 +185,20 @@ async def get_check(message: Message, state: FSMContext, bot: Bot) -> None:
         chat_id=config.ORDER_CHAT_ID,
         text=f'Заявка <b>{order.title}</b> закрыта',
     )
+
+    provider_invite_link = await db.token.get_by_user(user=provider)
+    if (manager := provider_invite_link.manager):
+        await db.user.update(
+            user=manager,
+            balance=manager.calculate_balance(order.amount),
+        )
+
+    operator_invite_link = await db.token.get_by_user(user=order.operator)
+    if (manager := operator_invite_link.manager):
+        await db.user.update(
+            user=manager,
+            balance=manager.calculate_balance(order.amount),
+        )
 
 
 @router.callback_query(F.data.startswith('create-dispute'))

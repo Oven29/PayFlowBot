@@ -59,6 +59,7 @@ async def search(
     role: UserRole | None,
     search_query: str,
     offset: int = 0,
+    **kwargs: Any,
 ) -> List[User]:
     """Search orders
 
@@ -66,12 +67,13 @@ async def search(
         role (UserRole | None): User role
         search_query (str): Search query
         offset (int, optional): Offset. Defaults to 0.
+        **kwargs (Any): Additional params for search
 
     Returns:
         List[Order]: List of orders
     """
     async with base_config.database:
-        filter_kwargs = {}
+        filter_kwargs = kwargs.copy()
         if not role is None:
             filter_kwargs['role'] = role
         if search_query.strip():

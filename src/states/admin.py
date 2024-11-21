@@ -6,10 +6,6 @@ class EditOrderState(StatesGroup):
     card = State()
 
 
-class AddParticipantState(StatesGroup):
-    input = State()
-
-
 class EditParticipantState(StatesGroup):
     commission = State()
     balance = State()
