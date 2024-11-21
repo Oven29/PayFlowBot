@@ -7,11 +7,11 @@ from src import config
 
 def dir_setup() -> None:
     "Dir setup"
-    if not os.path.exists(config.logs_dir):
-        os.mkdir(config.logs_dir)
+    if not os.path.exists(config.LOGS_DIR):
+        os.mkdir(config.LOGS_DIR)
 
-    if not os.path.exists(config.data_dir):
-        os.mkdir(config.data_dir)
+    if not os.path.exists(config.DATA_DIR):
+        os.mkdir(config.DATA_DIR)
 
 
 def logging_setup() -> None:
@@ -25,7 +25,7 @@ def logging_setup() -> None:
         handlers=(
             logging.StreamHandler(),
             RotatingFileHandler(
-                filename=os.path.join(config.logs_dir, f'.log'),
+                filename=os.path.join(config.LOGS_DIR, f'.log'),
                 mode='w',
                 maxBytes=1024 * 1024,
                 backupCount=4,
