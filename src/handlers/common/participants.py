@@ -72,7 +72,7 @@ async def add_participant_input(message: Message, state: FSMContext) -> None:
     token = await db.token.create(
         access_type=user_role_to_access_type[user_role],
         user_id=user_id,
-        username=username.lower(),
+        username=username.lower() if username else None,
         manager=user if user.role is UserRole.MANAGER else None,
     )
 
