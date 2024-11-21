@@ -77,11 +77,7 @@ async def turn_off_status(event: Message | CallbackQuery, state: FSMContext) -> 
 
         if not order is None:
             return await EditMessage(event)(
-                text='<b>Есть незакрытая заявка!</b>\n\n'
-                    f'Заявка #{order.id} принята\n'
-                    f'Банк: <b>{order_bank_to_text[order.bank]}</b>\n'
-                    f'Номер карты (телефона): <code>{order.card}</code>\n'
-                    f'Сумма: <code>{order.amount}</code>',
+                text=f'<b>Есть незакрытая заявка!</b>\n\n{order.get_message(user.role)}',
                 reply_markup=kb.finish_order(order.id),
             )
 

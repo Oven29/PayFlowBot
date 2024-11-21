@@ -14,7 +14,7 @@ class CheckNotFound(BaseCheckException):
 
 class InvalidCheckCard(BaseCheckException):
     """Invalid check card"""
-    message = 'Некорректная карта'
+    message = 'Некорректные реквизиты'
 
 
 class InvalidCheckRecipient(BaseCheckException):

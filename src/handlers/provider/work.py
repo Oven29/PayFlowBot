@@ -76,10 +76,7 @@ async def accept_order(call: CallbackQuery, state: FSMContext) -> None:
     await state.update_data(order_id=order.id)
 
     await EditMessage(call)(
-        text=f'Заявка #{order.id} принята\n'
-            f'Банк: <b>{order_bank_to_text[order.bank]}</b>\n'
-            f'Номер карты (телефона): <code>{order.card}</code>\n'
-            f'Сумма: <code>{order.amount}</code>',
+        text=f'<b>Заявка принята</b>\n\n{order.get_message(user.role)}',
         reply_markup=kb.finish_order(order.id),
     )
 

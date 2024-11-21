@@ -62,7 +62,7 @@ async def add_order_card(message: Message, state: FSMContext) -> None:
 @router.message(AddOrderState.card)
 async def wrong_card(message: Message) -> None:
     await message.answer(
-        text='Некорректный ввод\nТребуется ввести номер карты или телефона - числовое значение',
+        text='Некорректный ввод\nТребуется ввести номер реквизиты - числовое значение',
         reply_markup=kb.cancel,
     )
 
@@ -76,7 +76,7 @@ async def add_order_amount(message: Message, state: FSMContext) -> None:
         text='Подтвердите создание заявки:\n\n'
             f'Банк: {order_bank_to_text[OrderBank(data["bank"])]}\n'
             f'Номер: {data["uid"]}\n'
-            f'Карта: {data["card"]}\n'
+            f'Реквизиты: {data["card"]}\n'
             f'Сумма: {message.text}',
         reply_markup=kb.confirm_adding_order,
     )

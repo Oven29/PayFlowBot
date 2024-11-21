@@ -197,7 +197,7 @@ async def edit_order_card(call: CallbackQuery, state: FSMContext) -> None:
     await state.update_data(order_id=order.id)
 
     await EditMessage(call)(
-        text=f'{order.get_message(user.role)}\n\n<b>Изменение карты заявки</b>\n<i>Укажите новую карту</i>',
+        text=f'{order.get_message(user.role)}\n\n<b>Изменение реквезитов заявки</b>\n<i>Укажите новые реквезиты</i>',
         reply_markup=kb.cancel,
     )
 
@@ -212,6 +212,6 @@ async def set_order_card(message: Message, state: FSMContext) -> None:
     )
 
     await message.answer(
-        text=f'Карта заявки <b>{data["order_id"]}</b> изменена на <code>{message.text}</code>',
+        text=f'Реквезиты заявки <b>{data["order_id"]}</b> изменена на <code>{message.text}</code>',
         reply_markup=kb.in_menu,
     )

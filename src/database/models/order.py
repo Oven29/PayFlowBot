@@ -34,7 +34,7 @@ class Order(Model):
     def get_message(self, role: UserRole) -> str:
         res = f'Заявка #<i>{self.uid or self.id}</i> от {self.created_date}\n\n' \
             f'<b>Сумма:</b> <code>{self.amount}</code>\n' \
-            f'<b>Номер карты:</b> {self.card}\n' \
+            f'<b>Реквизиты:</b> {self.card}\n' \
             f'<b>Банк:</b> {order_bank_to_text[self.bank]}\n' \
             f'<b>Статус:</b> {order_status_to_text[self.status]}\n'
         if self.operator and role in (UserRole.OWNER, UserRole.ADMIN):
