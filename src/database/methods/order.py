@@ -1,10 +1,14 @@
-from typing import Any, Dict, List, Optional
+import logging
+from typing import Any, List, Optional
 
 from . import user
 from ..connect import base_config
 from ..enums import OrderStatus, OrderBank
 from ..models.order import Order, RejectOrder
 from ..models.user import User
+
+
+logger = logging.getLogger(__name__)
 
 
 async def get(
@@ -18,6 +22,7 @@ async def get(
     Returns:
         Optional[Order]: Order
     """
+    logger.info(f'Get order: {order_id}')
     async with base_config.database:
         result = await Order.objects.select_related([
             'operator', 'provider',
@@ -50,6 +55,7 @@ async def create(
     if operator is None:
         operator = await user.get(user_id=operator_id)
 
+    logger.info(f'Create order: {uid=} {amount=} {bank=} {card=} {operator.id=}')
     async with base_config.database:
         return await Order.objects.create(
             uid=uid,
@@ -75,10 +81,11 @@ async def update(
     Returns:
         Order: Updated order
     """
-    async with base_config.database:
-        if order is None:
+    if order is None:
             order = await get(order_id=order_id)
 
+    logger.info(f'Update order: {order.id=} ({kwargs})')
+    async with base_config.database:        
         await order.update(**kwargs)
 
     return order
@@ -99,11 +106,12 @@ async def reject(
 
     Returns:
         Order: Updated order
-    """
-    async with base_config.database:
-        if order is None:
-            order = await get(order_id=order_id)
+    """    
+    if order is None:
+        order = await get(order_id=order_id)
 
+    logger.info(f'Reject order: {order.id=} {provider.id=} {reason=}')
+    async with base_config.database:
         await RejectOrder.objects.create(
             order=order,
             provider=provider,
@@ -152,6 +160,7 @@ async def delete(
     Args:
         order_id (int): Order ID
     """
+    logger.info(f'Delete order: {order_id}')
     async with base_config.database:
         await Order.objects.filter(id=order_id).delete()
 
@@ -175,6 +184,7 @@ async def get_user_orders(
     if provider_id:
         filter_kwargs['provider__user_id'] = provider_id
 
+    logger.info(f'Get user orders: {filter_kwargs}')
     async with base_config.database:
         return await Order.objects.select_related([
             Order.operator, Order.provider, 'checks',
@@ -192,6 +202,7 @@ async def select(
     Returns:
         List[Order]: List of orders
     """
+    logger.info(f'Select orders: {kwargs}')
     async with base_config.database:
         return await Order.objects.select_related([
             Order.operator, Order.provider, 'checks',
@@ -217,6 +228,7 @@ async def get_current(
     if provider_id:
         filters['provider__user_id'] = provider_id
 
+    logger.info(f'Get current order: {operator_id=} {provider_id=}')
     async with base_config.database:
         return await Order.objects.select_related([
             Order.operator, Order.provider, 'checks',

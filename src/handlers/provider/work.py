@@ -12,6 +12,7 @@ from src.keyboards import provider as kb
 from src.states.provider import RejectOrderState, DisputeOrderState, ConfirmOrderState
 from src.utils.check.tink import TinkCheck, BaseCheckException
 from src.utils.edit_message import EditMessage
+from src.utils.distribute_order import go_on_shift
 
 
 router = Router(name=__name__)
@@ -48,7 +49,7 @@ async def reject_order_reason(message: Message, state: FSMContext) -> None:
     order = await db.order.reject(
         provider=user,
         reason=message.text,
-        oreder_id=state_data['order_id'],
+        order_id=state_data['order_id'],
     )
 
     await EditMessage(message)(
@@ -62,8 +63,17 @@ async def reject_order_reason(message: Message, state: FSMContext) -> None:
 async def accept_order(call: CallbackQuery, state: FSMContext) -> None:
     _, order_id = call.data.split()
     user = await db.user.get(user_id=call.from_user.id)
+    order = await db.order.get(order_id=int(order_id))
+
+    if not order.status is OrderStatus.CREATED:
+        await EditMessage(call)(
+            text='Заявка уже принята',
+        )
+        await go_on_shift(user)
+        return
+
     order = await db.order.update(
-        order_id=int(order_id),
+        order=order,
         provider=user,
     )
     await state.update_data(order_id=order.id)
@@ -159,12 +169,16 @@ async def get_check(message: Message, state: FSMContext, bot: Bot) -> None:
         order=order,
         status=OrderStatus.COMPLETED,
     )
+    logger.info(f'Updating provider balance {order.provider.user_id}: {order.provider.balance=}, '
+        f'{order.provider.commission=}%, {order.id=}')
     provider = await db.user.update(
         user=order.provider,
         provider_status=UserProviderStatus(state_data.get('status', UserProviderStatus.INACTIVE.value)),
         balance=order.provider.calculate_balance(order.amount),
     )
     provider_orders = await db.order.get_user_orders(provider_id=message.from_user.id)
+    logger.info(f'Updating operator balance {order.operator.user_id}: {order.operator.balance=}, '
+        f'{order.operator.commission=}%, {order.id=}')
     await db.user.update(
         user=order.operator,
         balance=order.operator.calculate_balance(order.amount),
@@ -188,6 +202,8 @@ async def get_check(message: Message, state: FSMContext, bot: Bot) -> None:
 
     provider_invite_link = await db.token.get_by_user(user=provider)
     if (manager := provider_invite_link.manager):
+        logger.info(f'Updating manager balance {manager.user_id}: {manager.balance=}, '
+            f'{manager.commission=}%, {order.id=}')
         await db.user.update(
             user=manager,
             balance=manager.calculate_balance(order.amount),
@@ -195,6 +211,8 @@ async def get_check(message: Message, state: FSMContext, bot: Bot) -> None:
 
     operator_invite_link = await db.token.get_by_user(user=order.operator)
     if (manager := operator_invite_link.manager):
+        logger.info(f'Updating manager balance {manager.user_id}: {manager.balance=}, '
+            f'{manager.commission=}%, {order.id=}')
         await db.user.update(
             user=manager,
             balance=manager.calculate_balance(order.amount),

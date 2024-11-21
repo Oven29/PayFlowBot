@@ -67,10 +67,13 @@ async def add_participant_input(message: Message, state: FSMContext) -> None:
     data = await state.get_data()
     await state.clear()
     user_role = UserRole(data['role'])
+
+    user = await db.user.get(user_id=message.from_user.id)
     token = await db.token.create(
         access_type=user_role_to_access_type[user_role],
         user_id=user_id,
         username=username,
+        manager=user if user.role is UserRole.MANAGER else None,
     )
 
     await message.answer(
@@ -129,7 +132,7 @@ async def participant_inline(query: InlineQuery, state: FSMContext) -> None:
     )
 
     if user.role is UserRole.MANAGER:
-        manager_users = await db.user.get_by_manager(manager=user)
+        manager_users = await db.token.get_by_manager(manager=user)
         users = [user for user in users if user in manager_users]
 
     if len(users) == 0:

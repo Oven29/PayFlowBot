@@ -11,6 +11,7 @@ async def create(
     access_type: AccessType,
     user_id: Optional[int] = None,
     username: Optional[str] = None,
+    manager: Optional[User] = None,
 ) -> IndividualToken:
     """Create token
 
@@ -18,6 +19,7 @@ async def create(
         access_type (UserRole): User role
         user_id (Optional[int]): User Telegram ID. Defaults to None.
         username (Optional[str], optional): Username. Defaults to None.
+        manager (Optional[User], optional): Manager. Defaults to None.
 
     Returns:
         IndividualToken: Created token
@@ -27,6 +29,7 @@ async def create(
             access_type=access_type,
             user_id=user_id,
             username=username,
+            manager=manager,
         )
 
 

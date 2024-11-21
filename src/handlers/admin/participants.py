@@ -9,7 +9,7 @@ from src.database.enums.user import UserProviderStatus
 from src.keyboards import admin as kb
 from src.filters.common import number_filter
 from src.filters.role import AdminFilter
-from src.states.admin import AddParticipantState, EditParticipantState
+from src.states.admin import EditParticipantState
 from src.utils.edit_message import EditMessage
 
 
