@@ -10,7 +10,7 @@ from src.database.enums import OrderStatus, order_status_to_text
 from src.database.enums.user import UserRole
 from src.keyboards import orders as kb
 from src.filters.role import RoleFilter
-from src.filters.common import amount_filter, card_filter
+from src.filters.common import AmountFilter, card_filter
 from src.utils.edit_message import EditMessage
 from src.utils.other import generate_rand_string
 from src.states.admin import EditOrderState
@@ -172,17 +172,17 @@ async def edit_order_amount(call: CallbackQuery, state: FSMContext) -> None:
     )
 
 
-@router.message(EditOrderState.amount, amount_filter)
-async def set_order_amount(message: Message, state: FSMContext) -> None:
+@router.message(EditOrderState.amount, AmountFilter(pass_value=True))
+async def set_order_amount(message: Message, state: FSMContext, value: float) -> None:
     data = await state.get_data()
     await state.clear()
     await db.order.update(
         order_id=data['order_id'],
-        amount=float(message.text.replace(',', '.')),
+        amount=value,
     )
 
     await message.answer(
-        text=f'Сумма заявки <b>{data["order_id"]}</b> изменена на <code>{message.text}</code>',
+        text=f'Сумма заявки <b>{data["order_id"]}</b> изменена на <code>{value}</code>',
         reply_markup=kb.in_menu,
     )
 

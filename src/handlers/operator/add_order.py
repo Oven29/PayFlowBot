@@ -6,7 +6,7 @@ from src import config
 from src.database import db
 from src.database.enums import UserRole, OrderBank, order_bank_to_text
 from src.keyboards import operator as kb
-from src.filters.common import amount_filter, number_filter
+from src.filters.common import AmountFilter, card_filter
 from src.filters.role import OperatorFilter
 from src.states.operator import AddOrderState
 from src.utils.distribute_order import distribute_order
@@ -48,7 +48,7 @@ async def add_order_uid(message: Message, state: FSMContext) -> None:
     )
 
 
-@router.message(AddOrderState.card, number_filter)
+@router.message(AddOrderState.card, card_filter)
 async def add_order_card(message: Message, state: FSMContext) -> None:
     await state.update_data(card=message.text)
     await state.set_state(AddOrderState.amount)
@@ -67,17 +67,17 @@ async def wrong_card(message: Message) -> None:
     )
 
 
-@router.message(AddOrderState.amount, amount_filter)
-async def add_order_amount(message: Message, state: FSMContext) -> None:
+@router.message(AddOrderState.amount, AmountFilter(pass_value=True))
+async def add_order_amount(message: Message, state: FSMContext, value: float) -> None:
     data = await state.get_data()
-    await state.update_data(amount=float(message.text.replace(',', '.')))
+    await state.update_data(amount=value)
 
     await message.answer(
         text='Подтвердите создание заявки:\n\n'
             f'Банк: {order_bank_to_text[OrderBank(data["bank"])]}\n'
             f'Номер: {data["uid"]}\n'
             f'Реквизиты: {data["card"]}\n'
-            f'Сумма: {message.text}',
+            f'Сумма: {value}',
         reply_markup=kb.confirm_adding_order,
     )
 

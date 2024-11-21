@@ -4,10 +4,9 @@ from aiogram.types import Message, CallbackQuery
 from aiogram.fsm.context import FSMContext
 
 from src.database import db
-from src.database.enums import UserRole, user_role_to_text, user_role_to_access_type
 from src.database.enums.user import UserProviderStatus
 from src.keyboards import admin as kb
-from src.filters.common import number_filter
+from src.filters.common import AmountFilter
 from src.filters.role import AdminFilter
 from src.states.admin import EditParticipantState
 from src.utils.edit_message import EditMessage
@@ -55,17 +54,17 @@ async def edit_participant_commission(call: CallbackQuery, state: FSMContext) ->
     )
 
 
-@router.message(number_filter, EditParticipantState.commission)
-async def set_participant_commission(message: Message, state: FSMContext) -> None:
+@router.message(EditParticipantState.commission, AmountFilter(pass_value=True))
+async def set_participant_commission(message: Message, state: FSMContext, value: float) -> None:
     data = await state.get_data()
     await state.clear()
     user = await db.user.update(
         user_pk=data['user_pk'],
-        commission=int(message.text),
+        commission=value,
     )
 
     await message.answer(
-        text=f'Комиссия пользователя <b>{user.title}</b> изменена на <code>{message.text}</code>',
+        text=f'Комиссия пользователя <b>{user.title}</b> изменена на <code>{value}</code>',
         reply_markup=kb.in_menu,
     )
 
@@ -83,17 +82,17 @@ async def edit_participant_balance(call: CallbackQuery, state: FSMContext) -> No
     )
 
 
-@router.message(number_filter, EditParticipantState.balance)
-async def set_participant_balance(message: Message, state: FSMContext) -> None:
+@router.message(EditParticipantState.balance, AmountFilter(pass_value=True))
+async def set_participant_balance(message: Message, state: FSMContext, value: float) -> None:
     data = await state.get_data()
     await state.clear()
     user = await db.user.update(
         user_pk=data['user_pk'],
-        balance=int(message.text),
+        balance=int(value),
     )
 
     await message.answer(
-        text=f'Баланс пользователя <b>{user.title}</b> изменен на <code>{message.text}</code>',
+        text=f'Баланс пользователя <b>{user.title}</b> изменен на <code>{value}</code>',
         reply_markup=kb.in_menu,
     )
 
