@@ -18,6 +18,9 @@ def logging_setup() -> None:
     "Logging setup"
     if config.LOGGING_LEVEL is None:
         return
+
+    logging.getLogger('databases').setLevel(logging.WARNING)
+
     logging.basicConfig(
         handlers=(
             logging.StreamHandler(),

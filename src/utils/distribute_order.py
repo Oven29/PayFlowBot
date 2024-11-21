@@ -1,3 +1,4 @@
+import logging
 import random
 from aiogram.enums import ParseMode
 
@@ -7,11 +8,16 @@ from src.keyboards import provider as kb
 from src.utils.use_bot import UseBot
 
 
+logger = logging.getLogger(__name__)
+
+
 async def distribute(
     order: db.order.Order,
     provider: db.user.User,
 ) -> None:
     """Distribute order to provider"""
+    logger.info(f'Distribute order: {order.id} to {provider.user_id}')
+
     await db.user.update(
         user=provider,
         provider_status=UserProviderStatus.BUSY,
@@ -47,6 +53,15 @@ async def go_on_shift(
     provider: db.user.User,
 ) -> None:
     """Find free order for provider if exists"""
+    order = await db.order.get_current(provider_id=provider.user_id)
+    if not order is None:
+        async with UseBot(parse_mode=ParseMode.HTML) as bot:
+            await bot.send_message(
+                text=f'Текущая заявка\n\n{order.get_message(provider.role)}',
+                reply_markup=kb.finish_order(order.id),
+            )
+        return
+
     free_orders = await db.order.select(
         status=OrderStatus.CREATED,
     )

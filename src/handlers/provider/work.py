@@ -63,17 +63,8 @@ async def reject_order_reason(message: Message, state: FSMContext) -> None:
 async def accept_order(call: CallbackQuery, state: FSMContext) -> None:
     _, order_id = call.data.split()
     user = await db.user.get(user_id=call.from_user.id)
-    order = await db.order.get(order_id=int(order_id))
-
-    if not order.status is OrderStatus.CREATED:
-        await EditMessage(call)(
-            text='Заявка уже принята',
-        )
-        await go_on_shift(user)
-        return
-
     order = await db.order.update(
-        order=order,
+        order_id=int(order_id),
         provider=user,
     )
     await state.update_data(order_id=order.id)
