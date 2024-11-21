@@ -36,7 +36,7 @@ async def reject_order(event: CallbackQuery, state: FSMContext) -> None:
 
 
 @router.message(F.text, RejectOrderState.reason)
-async def reject_order_reason(message: Message, state: FSMContext) -> None:
+async def reject_order_reason(message: Message, state: FSMContext, bot: Bot) -> None:
     state_data = await state.get_data()
     await state.clear()
     status = UserProviderStatus(state_data['status']) if 'status' in state_data else UserProviderStatus.INACTIVE
@@ -56,6 +56,12 @@ async def reject_order_reason(message: Message, state: FSMContext) -> None:
         text=f'Заявка <b>{order.title}</b> отклонена\n'
             f'Сессия продолжается, банк: <b>{provider_status_to_text[status]}</b>',
         reply_markup=kb.in_menu,
+    )
+    await go_on_shift(user)
+
+    await bot.send_message(
+        chat_id=config.ORDER_CHAT_ID,
+        text=f'Заявка <b>{order.title}</b> отклонена провайдером {user.title}',
     )
 
 
@@ -175,12 +181,20 @@ async def get_check(message: Message, state: FSMContext, bot: Bot) -> None:
         balance=order.operator.calculate_balance(order.amount),
     )
 
-    await message.answer(
-        text=f'Заявка <b>{order.title}</b> закрыта{note}\n\n'
-            f'🟩 Смена продолжается <b>{provider_status_to_text[provider.provider_status]}</b>\n'
-            f'Баланс: {provider.balance}\n'
-            f'Диспут баланс: {sum(order.amount for order in provider_orders if order.status is OrderStatus.DISPUTE)}',
-    )
+    if provider.provider_status is UserProviderStatus.INACTIVE:
+        await message.answer(
+            text=f'Статус 🟥 off',
+            reply_markup=kb.in_menu,
+        )
+    else:
+        await message.answer(
+            text=f'Заявка <b>{order.title}</b> закрыта{note}\n\n'
+                f'🟩 Смена продолжается <b>{provider_status_to_text[provider.provider_status]}</b>\n'
+                f'Баланс: {provider.balance}\n'
+                f'Диспут баланс: {sum(order.amount for order in provider_orders if order.status is OrderStatus.DISPUTE)}',
+        )
+        await go_on_shift(provider)
+
     await bot.send_message(
         chat_id=order.operator.user_id,
         text=f'Заявка <b>{order.title}</b> закрыта',

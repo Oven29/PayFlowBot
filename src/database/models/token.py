@@ -31,4 +31,4 @@ class IndividualToken(Model):
         "Check if token is available for user"
         return self.user is None and \
               (self.user_id is None or self.user_id == user_id) and \
-              (self.username is None or self.username == username)
+              (self.username is None or self.username == username.lower())

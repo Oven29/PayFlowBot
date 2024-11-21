@@ -39,7 +39,7 @@ def order_el(order_id: int, status: OrderStatus, role: UserRole) -> InlineKeyboa
         )])
     
     keyboard.append(
-        [InlineKeyboardButton(text='🔙 Назад', callback_data=f'admin orders'), in_menu_btn],
+        [InlineKeyboardButton(text='🔙 Назад', callback_data=f'orders'), in_menu_btn],
     )
 
     return InlineKeyboardMarkup(inline_keyboard=keyboard)
