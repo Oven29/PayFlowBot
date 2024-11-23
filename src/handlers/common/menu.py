@@ -5,7 +5,7 @@ from aiogram.types import Message, CallbackQuery
 from aiogram.fsm.context import FSMContext
 
 from src.database import db
-from src.database.enums import UserRole, OrderStatus, UserProviderStatus, provider_status_to_text
+from src.database.enums import UserRole, OrderStatus, UserProviderStatus, provider_status_to_text, order_status_to_text
 from src.keyboards import common as kb
 from src.keyboards.provider import finish_order
 from src.utils.edit_message import EditMessage
@@ -19,8 +19,14 @@ router = Router(name=__name__)
 @router.callback_query(F.data.in_({'cancel', 'main-menu', 'admin-menu'}), AdminFilter())
 async def admin_menu(event: Message | CallbackQuery, state: FSMContext) -> None:
     await state.clear()
+    orders = await db.order.select()
+
     await EditMessage(event)(
-        text=f'<b>Добро пожаловать в меню администратора, {event.from_user.first_name}!</b>',
+        text=f'Добро пожаловать в меню администратора, {event.from_user.first_name}!\n\n' +
+            '\n'.join(
+                f'<b>{text}</b>: {len([order for order in orders if order.status is status])}'
+                  for text, status in order_status_to_text.items()
+            ),
         reply_markup=kb.admin_menu,
     )
 
@@ -30,16 +36,19 @@ async def admin_menu(event: Message | CallbackQuery, state: FSMContext) -> None:
 async def operator_menu(event: Message | CallbackQuery, state: FSMContext) -> None:
     await state.clear()
     orders = await db.order.get_user_orders(opearator_id=event.from_user.id)
-    completed_orders = [order for order in orders if order.status is OrderStatus.COMPLETED]
-    active_orders = [order for order in orders if order.status in (OrderStatus.CREATED, OrderStatus.PROCESSING)]
-    cancelled_orders = [order for order in orders if order.status is OrderStatus.CANCELLED]
+    count_orders_by_status = {
+        status: len([order for order in orders if order.status is status])
+          for status in OrderStatus
+    }
     user = await db.user.get(user_id=event.from_user.id)
 
     await EditMessage(event)(
         text=f'<b>Меню оператора</b>\n\n'
-            f'<b>Кол-во заявок в работе:</b> {len(active_orders)}\n'
-            f'<b>Кол-во обработанных заявок:</b> {len(completed_orders)}\n'
-            f'<b>Кол-во отменённых заявок:</b> {len(cancelled_orders)}\n'
+            f'<b>Ожидают:</b> {count_orders_by_status[OrderStatus.CREATED]}\n'
+            f'<b>Кол-во заявок в работе:</b> {count_orders_by_status[OrderStatus.PROCESSING]}\n'
+            f'<b>Кол-во обработанных заявок:</b> {count_orders_by_status[OrderStatus.COMPLETED]}\n'
+            f'<b>Кол-во отменённых заявок:</b> {count_orders_by_status[OrderStatus.CANCELLED]}\n'
+            f'<b>Кол-во диспутов:</b> {count_orders_by_status[OrderStatus.DISPUTE]}\n\n'
             f'<b>Баланс:</b> {user.balance}\n'
             f'<b>Комиссия:</b> {user.commission}%',
         reply_markup=kb.operator_menu,
