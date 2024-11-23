@@ -18,11 +18,12 @@ LOGS_DIR: Final[str] = os.path.join(ROOT_DIR, 'logs')
 BOT_TOKEN: Final[str] = os.getenv('BOT_TOKEN')
 OWNER_ID: Final[str] = int(os.getenv('OWNER_ID') or 0)
 
-LOGGING_LEVEL: Final[str] = logging._nameToLevel.get(os.getenv('LOGGING', 'WARN').upper(), logging.WARN)
+LOGGING_LEVEL: Final[str] = logging._nameToLevel.get(os.getenv('LOGGING', 'INFO').upper(), logging.INFO)
 
 BOT_USERNAME: Optional[str] = ...
 
-DATABASE_URL: Final[str] = f'sqlite:///' + os.path.join(DATA_DIR, 'database.db')
+DATABASE_URL: Final[str] = os.getenv('DATABASE_URL', f'sqlite:///' + os.path.join(DATA_DIR, 'database.db'))
+REDIS_URL: Final[str] = os.getenv('REDIS_URL')
 
 OVERPAYEMNT_CHAT_ID: Final[int] = os.getenv('OVERPAYEMNT_CHAT_ID', -1)
 ORDER_CHAT_ID: Final[int] = os.getenv('ORDER_CHAT_ID', -1)
