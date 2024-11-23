@@ -61,7 +61,7 @@ async def reject_order_reason(message: Message, state: FSMContext, bot: Bot) -> 
     await go_on_shift(user)
 
     await bot.send_message(
-        chat_id=config.ORDER_CHAT_ID,
+        chat_id=config.REJECT_ORDER_CHAT_ID,
         text=f'Заявка <b>{order.title}</b> отклонена провайдером {user.title}',
     )
 

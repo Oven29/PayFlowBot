@@ -136,10 +136,18 @@ async def delete_order(call: CallbackQuery) -> None:
 @router.callback_query(F.data.startswith('confirm-delete-order'))
 async def confirm_delete_order(call: CallbackQuery) -> None:
     _, order_id = call.data.split()
-    await db.order.delete(order_id=int(order_id))
+    order = await db.order.get(order_id=int(order_id))
+
+    if order.status in (OrderStatus.PROCESSING, OrderStatus.DISPUTE):
+        return await call.answer(
+            text='! Заявку, которая в работе и/или по которой открыт диспут нельзя удалить',
+            show_alert=True,
+        )
+
+    await db.order.delete(order_id=order.id)
 
     await EditMessage(call)(
-        text=f'Заявка <b>#{order_id}</b> удалена',
+        text=f'Заявка <b>{order.title}</b> удалена',
         reply_markup=kb.in_menu,
     )
 

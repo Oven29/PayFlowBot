@@ -37,7 +37,7 @@ def order_el(order_id: int, status: OrderStatus, role: UserRole) -> InlineKeyboa
             text='Изменить данные',
             callback_data=f'edit-order {order_id}'
         )])
-    
+
     keyboard.append(
         [InlineKeyboardButton(text='🔙 Назад', callback_data=f'orders'), in_menu_btn],
     )

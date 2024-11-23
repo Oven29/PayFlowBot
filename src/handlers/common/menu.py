@@ -103,11 +103,12 @@ async def manager_menu(event: Message | CallbackQuery, state: FSMContext) -> Non
 @router.callback_query(F.data.startswith('update-order-info'))
 async def update_order_info(call: CallbackQuery) -> None:
     _, order_id = call.data.split()
+    user = await db.user.get(user_id=call.from_user.id)
     order = await db.order.get(order_id=int(order_id))
 
     try:
         await call.message.edit_text(
-            text=f'{order.get_message(UserRole.ADMIN)}\n'
+            text=f'{order.get_message(user.role)}\n'
                 f'Создана <i>{str(datetime.now() - order.created_date)[:-7]}</i> назад',
             reply_markup=kb.update_order_info(order.id),
         )

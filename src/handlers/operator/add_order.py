@@ -107,15 +107,15 @@ async def confirm_add_order(call: CallbackQuery, state: FSMContext, bot: Bot) ->
     await distribute_order(order)
 
     await state.clear()
-    await call.message.edit_text(
-        text=f'Заявка <b>{order.title}</b> создана',
-        reply_markup=kb.order_created(order.bank),
-    )
 
     await bot.send_message(
         chat_id=operator.user_id,
         text=order.description,
         reply_markup=kb.update_order_info(order.id),
+    )
+    await call.message.edit_text(
+        text=f'Заявка <b>{order.title}</b> создана',
+        reply_markup=kb.order_created(order.bank),
     )
     await bot.send_message(
         chat_id=config.ORDER_CHAT_ID,
