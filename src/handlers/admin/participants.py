@@ -4,7 +4,7 @@ from aiogram.types import Message, CallbackQuery
 from aiogram.fsm.context import FSMContext
 
 from src.database import db
-from src.database.enums.user import UserProviderStatus
+from src.database.enums import UserProviderStatus, OrderBank, order_bank_to_text
 from src.keyboards import admin as kb
 from src.filters.common import AmountFilter
 from src.filters.role import AdminFilter
@@ -43,28 +43,34 @@ async def confirm_delete_participant(call: CallbackQuery) -> None:
 
 @router.callback_query(F.data.startswith('edit-participant-commission'))
 async def edit_participant_commission(call: CallbackQuery, state: FSMContext) -> None:
-    _, user_pk = call.data.split()
+    _, bank, user_pk = call.data.split()
     user = await db.user.get(user_pk=int(user_pk))
-    await state.update_data(user_pk=user.id)
+    await state.update_data(user_pk=user.id, bank=bank)
     await state.set_state(EditParticipantState.commission)
 
     await EditMessage(call)(
-        text=f'{user.message}\n\n<b>Изменение комиссии</b>\n<i>Укажите новую комиссию</i>',
+        text=f'{user.message}\n\n<b>Изменение комиссии {order_bank_to_text[OrderBank(bank)]}</b>'
+            '\n<i>Укажите новую комиссию</i>',
         reply_markup=kb.cancel,
     )
 
 
 @router.message(EditParticipantState.commission, AmountFilter(pass_value=True))
 async def set_participant_commission(message: Message, state: FSMContext, value: float) -> None:
-    data = await state.get_data()
+    state_data = await state.get_data()
     await state.clear()
+
+    user = await db.user.get(user_pk=state_data['user_pk'])
+    commissions = user.commissions or {}
+    bank = OrderBank(state_data['bank'])
+    commissions[bank] = value
     user = await db.user.update(
-        user_pk=data['user_pk'],
-        commission=value,
+        user_pk=user.id,
+        commission=commissions,
     )
 
     await message.answer(
-        text=f'Комиссия пользователя <b>{user.title}</b> изменена на <code>{value}</code>',
+        text=f'Комиссия {order_bank_to_text[bank]} пользователя <b>{user.title}</b> изменена на <code>{value}%</code>',
         reply_markup=kb.in_menu,
     )
 

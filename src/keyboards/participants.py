@@ -1,7 +1,7 @@
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
 from .common import cancel_btn, cancel, in_menu_btn, in_menu
-from src.database.enums import UserRole, user_role_to_text
+from src.database.enums import UserRole, user_role_to_text, order_bank_to_text
 
 
 participants_menu = InlineKeyboardMarkup(inline_keyboard=[
@@ -66,10 +66,13 @@ def user_el(user_pk: int, role: int) -> InlineKeyboardMarkup:
     keyboard = []
 
     if role in (UserRole.OPERATOR, UserRole.PROVIDER):
-        keyboard.append([InlineKeyboardButton(
-            text='Изменить комиссию',
-            callback_data=f'edit-participant-commission {user_pk}',
-        )])
+        keyboard.extend([
+            [InlineKeyboardButton(
+                text=f'Изменить комиссию {text}',
+                callback_data=f'edit-participant-commission {bank} {user_pk}',
+            )]
+              for bank, text in order_bank_to_text.items()
+        ])
         keyboard.append([InlineKeyboardButton(
             text='Изменить баланс',
             callback_data=f'edit-participant-balance {user_pk}',
