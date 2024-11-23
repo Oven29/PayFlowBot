@@ -69,7 +69,7 @@ def user_el(user_pk: int, role: int) -> InlineKeyboardMarkup:
         keyboard.extend([
             [InlineKeyboardButton(
                 text=f'Изменить комиссию {text}',
-                callback_data=f'edit-participant-commission {bank} {user_pk}',
+                callback_data=f'edit-participant-commission {bank.value} {user_pk}',
             )]
               for bank, text in order_bank_to_text.items()
         ])
@@ -89,3 +89,9 @@ def user_el(user_pk: int, role: int) -> InlineKeyboardMarkup:
     ])
 
     return InlineKeyboardMarkup(inline_keyboard=keyboard)
+
+
+def back_to_participant(user_pk: int) -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text='🔙 Назад', callback_data=f'participant-menu {user_pk}'), in_menu_btn],
+    ])

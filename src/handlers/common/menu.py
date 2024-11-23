@@ -25,7 +25,7 @@ async def admin_menu(event: Message | CallbackQuery, state: FSMContext) -> None:
         text=f'Добро пожаловать в меню администратора, {event.from_user.first_name}!\n\n' +
             '\n'.join(
                 f'<b>{text}</b>: {len([order for order in orders if order.status is status])}'
-                  for text, status in order_status_to_text.items()
+                  for status, text in order_status_to_text.items()
             ),
         reply_markup=kb.admin_menu,
     )
@@ -49,7 +49,7 @@ async def operator_menu(event: Message | CallbackQuery, state: FSMContext) -> No
             f'<b>Кол-во обработанных заявок:</b> {count_orders_by_status[OrderStatus.COMPLETED]}\n'
             f'<b>Кол-во отменённых заявок:</b> {count_orders_by_status[OrderStatus.CANCELLED]}\n'
             f'<b>Кол-во диспутов:</b> {count_orders_by_status[OrderStatus.DISPUTE]}\n\n'
-            f'<b>Баланс:</b> {user.balance}\n'
+            f'<b>Баланс:</b> {user.balance}₽\n'
             f'<b>Комиссия:</b> {user.commission_message}',
         reply_markup=kb.operator_menu,
     )
@@ -85,9 +85,9 @@ async def provider_menu(event: Message | CallbackQuery, state: FSMContext) -> No
             f'<b>Кол-во диспутов:</b> {len(disput_orders)}\n'
             f'<b>Кол-во обработанных заявок:</b> {len(completed_orders)}\n'
             f'<b>Кол-во отменённых заявок:</b> {len(cancelled_orders)}\n'
-            f'<b>Баланс:</b> {user.balance}\n'
+            f'<b>Баланс:</b> {user.balance}₽\n'
             f'<b>Комиссия:</b> {user.commission_message}\n'
-            f'<b>Замороженный общий баланс всех диспутов:</b> {sum(order.amount for order in disput_orders)}',
+            f'<b>Замороженный общий баланс всех диспутов:</b> {sum(order.amount for order in disput_orders)}₽',
         reply_markup=kb.provider_menu,
     )
 
@@ -102,7 +102,7 @@ async def manager_menu(event: Message | CallbackQuery, state: FSMContext) -> Non
 
     await EditMessage(event)(
         text='<b>Меню менеджера</b>\n\n'
-            f'<b>Баланс:</b> {user.balance}\n'
+            f'<b>Баланс:</b> {user.balance}₽\n'
             f'<b>Комиссия:</b> {user.commission_message}\n'
             f'<b>Количество приглашенных пользователей:</b> {len(invites)}',
         reply_markup=kb.manager_menu,

@@ -1,7 +1,7 @@
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
 from .common import cancel_btn, cancel, in_menu_btn, in_menu
-from .participants import participants_menu
+from .participants import participants_menu, back_to_participant
 from src.database.enums import UserRole, user_role_to_text
 
 

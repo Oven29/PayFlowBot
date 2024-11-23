@@ -29,7 +29,7 @@ class User(Model):
     def description(self) -> str:
         res = f'Роль: {user_role_to_text[self.role]} Дата регитсрации: {self.reg_date}'
         if self.role in (UserRole.OPERATOR, UserRole.PROVIDER):
-            res += f' Баланс: {self.balance} Комиссия: {self.commission_message}'
+            res += f' Баланс: {self.balance}₽ Комиссия: {self.commission_message}'
         return res
 
     @pydantic.computed_field()
@@ -39,7 +39,7 @@ class User(Model):
 
         if self.role in (UserRole.OPERATOR, UserRole.PROVIDER, UserRole.MANAGER):
             res += f'\n<b>Комиссия:</b> {self.commission_message}\n' \
-                f'<b>Текущий баланс:</b> {self.balance}'
+                f'<b>Текущий баланс:</b> {self.balance}₽'
 
         orders = getattr(self, f'{self.role.value}_orders', None)
         if not orders:
@@ -66,4 +66,4 @@ class User(Model):
         if self.commissions is None:
             return 'Не определена (0%)'
 
-        return ' '.join(f'{order_bank_to_text[OrderBank(bank)]} - {commision}%' for bank, commision in self.commisions.items())
+        return ' '.join(f'{order_bank_to_text[OrderBank(bank)]} - {commission}%' for bank, commission in self.commissions.items())

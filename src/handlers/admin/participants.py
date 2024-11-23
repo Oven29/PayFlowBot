@@ -66,12 +66,12 @@ async def set_participant_commission(message: Message, state: FSMContext, value:
     commissions[bank] = value
     user = await db.user.update(
         user_pk=user.id,
-        commission=commissions,
+        commissions=commissions,
     )
 
     await message.answer(
         text=f'Комиссия {order_bank_to_text[bank]} пользователя <b>{user.title}</b> изменена на <code>{value}%</code>',
-        reply_markup=kb.in_menu,
+        reply_markup=kb.back_to_participant(user.id),
     )
 
 
@@ -99,7 +99,7 @@ async def set_participant_balance(message: Message, state: FSMContext, value: fl
 
     await message.answer(
         text=f'Баланс пользователя <b>{user.title}</b> изменен на <code>{value}</code>',
-        reply_markup=kb.in_menu,
+        reply_markup=kb.back_to_participant(user.id),
     )
 
 
