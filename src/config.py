@@ -26,3 +26,4 @@ DATABASE_URL: Final[str] = f'sqlite:///' + os.path.join(DATA_DIR, 'database.db')
 
 OVERPAYEMNT_CHAT_ID: Final[int] = os.getenv('OVERPAYEMNT_CHAT_ID', -1)
 ORDER_CHAT_ID: Final[int] = os.getenv('ORDER_CHAT_ID', -1)
+REJECT_ORDER_CHAT_ID: Final[int] = os.getenv('REJECT_ORDER_CHAT_ID', -1)

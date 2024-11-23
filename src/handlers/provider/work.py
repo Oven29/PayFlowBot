@@ -11,8 +11,9 @@ from src.filters.role import ProviderFilter
 from src.keyboards import provider as kb
 from src.states.provider import RejectOrderState, DisputeOrderState, ConfirmOrderState
 from src.utils.check.tink import TinkCheck, BaseCheckException
-from src.utils.edit_message import EditMessage
 from src.utils.distribute_order import go_on_shift
+from src.utils.edit_message import EditMessage
+from src.utils.scheduler import remove_job_by_name_pattern
 
 
 router = Router(name=__name__)
@@ -74,6 +75,7 @@ async def accept_order(call: CallbackQuery, state: FSMContext) -> None:
         provider=user,
     )
     await state.update_data(order_id=order.id)
+    remove_job_by_name_pattern(f'*{call.from_user.id}')
 
     await EditMessage(call)(
         text=f'<b>Заявка принята</b>\n\n{order.get_message(user.role)}',

@@ -1,14 +1,72 @@
+from datetime import datetime, timedelta
 import logging
 import random
 from aiogram.enums import ParseMode
 
+from src import config
 from src.database import db
 from src.database.enums import UserProviderStatus, OrderStatus, order_bank_to_provider_status
 from src.keyboards import provider as kb
+from src.utils.scheduler import scheduler, DateTrigger
 from src.utils.use_bot import UseBot
 
 
 logger = logging.getLogger(__name__)
+
+
+async def reject_order(
+    order: db.order.Order,
+    provider: db.user.User,
+) -> None:
+    """If provider does not accept order after notify, reject it"""
+    logger.info(f'Reject order: {order.id=} {provider.user_id=}')
+
+    await db.order.reject(
+        order=order,
+        provider=provider,
+        reason='Провайдер не принял заявку, автоматическая отмена',
+    )
+    await db.user.update(
+        user=provider,
+        provider_status=UserProviderStatus.INACTIVE,
+    )
+    await distribute_order(order)
+
+    async with UseBot(parse_mode=ParseMode.HTML) as bot:
+        await bot.send_message(
+            chat_id=provider.user_id,
+            text=f'Вы не приняли заявку <b>{order.title}</b>',
+        )
+        await bot.send_message(
+            chat_id=config.REJECT_ORDER_CHAT_ID,
+            text=f'Провайдер {provider.title} не принял заявку <b>{order.title}</b> и был отключён.'
+                'Заявка передана другому провайдеру',
+        )
+
+
+async def notify_provider(
+    order: db.order.Order,
+    provider: db.user.User,
+) -> None:
+    """Notify provider about current order, if his does not accept it"""
+    logger.info(f'Notify provider: {order.id=} {provider.user_id=}')
+
+    scheduler.add_job(
+        name=f'reject_order {provider.user_id}',
+        func=reject_order,
+        trigger=DateTrigger(datetime.now() + timedelta(minutes=3)),
+        kwargs={
+            'order': order,
+            'provider': provider,
+        },
+    )
+
+    async with UseBot(parse_mode=ParseMode.HTML) as bot:
+        await bot.send_message(
+            chat_id=provider.user_id,
+            text=f'У Вас новая заявка <b>{order.title}</b>',
+            reply_markup=kb.accept_order(order.id),        
+        )
 
 
 async def distribute(
@@ -16,7 +74,7 @@ async def distribute(
     provider: db.user.User,
 ) -> None:
     """Distribute order to provider"""
-    logger.info(f'Distribute order: {order.id} to {provider.user_id}')
+    logger.info(f'Distribute order: {order.id=} to {provider.user_id=}')
 
     await db.user.update(
         user=provider,
@@ -25,6 +83,16 @@ async def distribute(
     await db.order.update(
         order=order,
         status=OrderStatus.PROCESSING,
+    )
+
+    scheduler.add_job(
+        name=f'notify_provider {provider.user_id}',
+        func=notify_provider,
+        trigger=DateTrigger(datetime.now() + timedelta(minutes=5)),
+        kwargs={
+            'order': order,
+            'provider': provider,
+        },
     )
 
     async with UseBot(parse_mode=ParseMode.HTML) as bot:
