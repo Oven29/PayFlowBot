@@ -23,6 +23,7 @@ class User(Model):
     def title(self) -> str:
         if self.username:
             return f'@{self.username} (id={self.user_id})'
+
         return str(self.user_id)
 
     @pydantic.computed_field()

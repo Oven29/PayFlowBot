@@ -32,7 +32,7 @@ class Order(Model):
         return f'{order_bank_to_text[self.bank]} на {self.amount} "{self.card}" от {self.created_date}'
 
     def get_message(self, role: UserRole) -> str:
-        res = f'Заявка #<i>{self.uid or self.id}</i> от {self.created_date}\n\n' \
+        res = f'Заявка <i>#{self.uid or self.id}</i> от {self.created_date}\n\n' \
             f'<b>Сумма:</b> <code>{self.amount}</code>\n' \
             f'<b>Реквизиты:</b> {self.card}\n' \
             f'<b>Банк:</b> {order_bank_to_text[self.bank]}\n' \
@@ -47,6 +47,7 @@ class Order(Model):
             res += f'\n\n<b>Причина отмены:</b> <i>{self.cancel_reason}</i>'
         if self.dispute_reason:
             res += f'\n\n<b>Причина диспута:</b> <i>{self.dispute_reason}</i>'
+
         return res
 
 
