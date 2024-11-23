@@ -50,7 +50,7 @@ async def operator_menu(event: Message | CallbackQuery, state: FSMContext) -> No
             f'<b>Кол-во отменённых заявок:</b> {count_orders_by_status[OrderStatus.CANCELLED]}\n'
             f'<b>Кол-во диспутов:</b> {count_orders_by_status[OrderStatus.DISPUTE]}\n\n'
             f'<b>Баланс:</b> {user.balance}\n'
-            f'<b>Комиссия:</b> {user.commission}%',
+            f'<b>Комиссия:</b> {user.commission_message}',
         reply_markup=kb.operator_menu,
     )
 
@@ -86,7 +86,7 @@ async def provider_menu(event: Message | CallbackQuery, state: FSMContext) -> No
             f'<b>Кол-во обработанных заявок:</b> {len(completed_orders)}\n'
             f'<b>Кол-во отменённых заявок:</b> {len(cancelled_orders)}\n'
             f'<b>Баланс:</b> {user.balance}\n'
-            f'<b>Комиссия:</b> {user.commission}%\n'
+            f'<b>Комиссия:</b> {user.commission_message}\n'
             f'<b>Замороженный общий баланс всех диспутов:</b> {sum(order.amount for order in disput_orders)}',
         reply_markup=kb.provider_menu,
     )
@@ -103,7 +103,7 @@ async def manager_menu(event: Message | CallbackQuery, state: FSMContext) -> Non
     await EditMessage(event)(
         text='<b>Меню менеджера</b>\n\n'
             f'<b>Баланс:</b> {user.balance}\n'
-            f'<b>Комиссия:</b> {user.commission}%\n'
+            f'<b>Комиссия:</b> {user.commission_message}\n'
             f'<b>Количество приглашенных пользователей:</b> {len(invites)}',
         reply_markup=kb.manager_menu,
     )

@@ -1,10 +1,10 @@
 from datetime import datetime
-from typing import Optional
-from ormar import Integer, Model, String, DateTime, Enum, Float, Boolean
+from typing import Dict, Optional
+from ormar import Integer, Model, String, DateTime, Enum, Float, JSON
 import pydantic
 
 from ..connect import base_config
-from ..enums import UserRole, UserProviderStatus, OrderStatus, user_role_to_text
+from ..enums import UserRole, UserProviderStatus, OrderStatus, OrderBank, order_bank_to_text, user_role_to_text
 
 
 class User(Model):
@@ -16,7 +16,7 @@ class User(Model):
     reg_date: datetime = DateTime(default=datetime.now)
     role: UserRole = Enum(enum_class=UserRole)
     balance: float = Float(default=0)
-    commission: float = Float(default=0)
+    commissions: Optional[Dict[str, float]] = JSON(nullable=True)
     provider_status: UserProviderStatus = Enum(enum_class=UserProviderStatus, default=UserProviderStatus.NO_PROVIDER)
 
     @pydantic.computed_field()
@@ -29,7 +29,7 @@ class User(Model):
     def description(self) -> str:
         res = f'Роль: {user_role_to_text[self.role]} Дата регитсрации: {self.reg_date}'
         if self.role in (UserRole.OPERATOR, UserRole.PROVIDER):
-            res += f' Баланс: {self.balance} Комиссия: {self.commission}'
+            res += f' Баланс: {self.balance} Комиссия: {self.commission_message}'
         return res
 
     @pydantic.computed_field()
@@ -38,7 +38,7 @@ class User(Model):
             f'<b>Дата регистрации:</b> <code>{self.reg_date}</code>'
 
         if self.role in (UserRole.OPERATOR, UserRole.PROVIDER, UserRole.MANAGER):
-            res += f'\n<b>Комиссия:</b> {self.commission}\n' \
+            res += f'\n<b>Комиссия:</b> {self.commission_message}\n' \
                 f'<b>Текущий баланс:</b> {self.balance}'
 
         orders = getattr(self, f'{self.role.value}_orders', None)
@@ -52,5 +52,18 @@ class User(Model):
             f'<b>Кол-во отменённых заявок:</b> {len(canceled_orders)}\n' \
             f'<b>Общий объём обработанных денег:</b> {sum(el.amount for el in completed_orders)}'
 
-    def calculate_balance(self, order_amount: float) -> float:
-        return round(self.balance + order_amount * ((100 + self.commission) / 100), 2)
+    def calculate_balance(self, order_amount: float, order_bank: OrderBank) -> float:
+        return round(self.balance + order_amount * ((100 + self.get_commission(order_bank)) / 100), 2)
+
+    def get_commission(self, bank: OrderBank) -> float:
+        if self.commissions is None:
+            return 0
+
+        return self.commissions.get(bank.value, 0)
+
+    @pydantic.computed_field()
+    def commission_message(self) -> str:
+        if self.commissions is None:
+            return 'Не определена (0%)'
+
+        return ' '.join(f'{order_bank_to_text[OrderBank(bank)]} - {commision}%' for bank, commision in self.commisions.items())

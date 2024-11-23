@@ -166,18 +166,18 @@ async def get_check(message: Message, state: FSMContext, bot: Bot) -> None:
         status=OrderStatus.COMPLETED,
     )
     logger.info(f'Updating provider balance {order.provider.user_id}: {order.provider.balance=}, '
-        f'{order.provider.commission=}%, {order.id=}')
+        f'{order.provider.commissions}, {order.id=}')
     provider = await db.user.update(
         user=order.provider,
         provider_status=UserProviderStatus(state_data.get('status', UserProviderStatus.INACTIVE.value)),
-        balance=order.provider.calculate_balance(order.amount),
+        balance=order.provider.calculate_balance(order.amount, order.bank),
     )
     provider_orders = await db.order.get_user_orders(provider_id=message.from_user.id)
     logger.info(f'Updating operator balance {order.operator.user_id}: {order.operator.balance=}, '
-        f'{order.operator.commission=}%, {order.id=}')
+        f'{order.operator.commissions}, {order.id=}')
     await db.user.update(
         user=order.operator,
-        balance=order.operator.calculate_balance(order.amount),
+        balance=order.operator.calculate_balance(order.amount, order.bank),
     )
 
     if provider.provider_status is UserProviderStatus.INACTIVE:
@@ -207,19 +207,19 @@ async def get_check(message: Message, state: FSMContext, bot: Bot) -> None:
     provider_invite_link = await db.token.get_by_user(user=provider)
     if (manager := provider_invite_link.manager):
         logger.info(f'Updating manager balance {manager.user_id}: {manager.balance=}, '
-            f'{manager.commission=}%, {order.id=}')
+            f'{manager.commissions}, {order.id=}')
         await db.user.update(
             user=manager,
-            balance=manager.calculate_balance(order.amount),
+            balance=manager.calculate_balance(order.amount, order.bank),
         )
 
     operator_invite_link = await db.token.get_by_user(user=order.operator)
     if (manager := operator_invite_link.manager):
         logger.info(f'Updating manager balance {manager.user_id}: {manager.balance=}, '
-            f'{manager.commission=}%, {order.id=}')
+            f'{manager.commissions}, {order.id=}')
         await db.user.update(
             user=manager,
-            balance=manager.calculate_balance(order.amount),
+            balance=manager.calculate_balance(order.amount, order.bank),
         )
 
 
