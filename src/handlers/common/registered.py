@@ -1,15 +1,16 @@
 import logging
-from aiogram import Router, F
+from aiogram import Bot, Router, F
 from aiogram.filters import CommandStart, Command
 from aiogram.types import Message, CallbackQuery
 from aiogram.fsm.context import FSMContext
 
-from .menu import admin_menu, operator_menu, provider_menu, manager_menu
 
+from .menu import admin_menu, operator_menu, provider_menu, manager_menu
+from src import config
 from src.database import db
-from src.database.enums import access_type_to_user_role
-from src.database.enums.user import UserProviderStatus, UserRole
+from src.database.enums import OrderStatus, UserProviderStatus, UserRole, access_type_to_user_role
 from src.keyboards import common as kb
+from src.utils.distribute_order import distribute_order
 
 
 router = Router(name=__name__)
@@ -75,10 +76,29 @@ async def start_command(message: Message, state: FSMContext) -> None:
 
 
 @router.message(Command('freeze'))
-async def freeze(message: Message, state: FSMContext) -> None:
+async def freeze(message: Message, state: FSMContext, bot: Bot) -> None:
     await state.clear()
+
+    user = await db.user.get(user_id=message.from_user.id)
+    if user.provider_status is UserProviderStatus.BUSY:
+        order = await db.order.get_current(provider_id=user.id)
+        await db.order.reject(
+            order=order,
+            provider=user,
+            reason='Пользователь заморозил профиль',
+        )
+        await bot.send_message(
+            chat_id=config.REJECT_ORDER_CHAT_ID,
+            text=f'Провайдер {user.title} заморожил аккаунт, заявка <b>{order.id}</b> была передана другому исполнителю',
+        )
+        await distribute_order(order)
+        await db.order.update(
+            order=order,
+            status=OrderStatus.CREATED,
+        )
+
     await db.user.update(
-        user_id=message.from_user.id,
+        user=user,
         role=UserRole.IS_FREEZE,
         provider_status=UserProviderStatus.INACTIVE,
     )
