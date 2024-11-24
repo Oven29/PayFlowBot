@@ -5,7 +5,7 @@ services:
       dockerfile: Dockerfile
     environment:
       - REDIS_URL=${REDIS_URL:-redis://redis:6379/0}
-      - DATABASE_URL=${DATABASE_URL:-postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-qwerty}@db:5432/${POSTGRES_DB:-payflowbot_db}}
+      - DATABASE_URL=${DATABASE_URL:-postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-qwerty}@localhost:5432/${POSTGRES_DB:-payflowbot_db}}
     depends_on:
       - db
       - redis
