@@ -27,7 +27,8 @@ def order_el(order_id: int, status: OrderStatus, role: UserRole) -> InlineKeyboa
             text='Перенести в обработанные',
             callback_data=f'move-order completed {order_id}',
         )])
-    if status is OrderStatus.COMPLETED and role in (UserRole.OWNER, UserRole.ADMIN) or status is OrderStatus.CREATED:
+    if status is OrderStatus.COMPLETED and role in (UserRole.OWNER, UserRole.ADMIN) or \
+        status in (OrderStatus.CREATED, OrderStatus.PROCESSING):
         keyboard.append([InlineKeyboardButton(
             text='Удалить заявку',
             callback_data=f'delete-order {order_id}',
