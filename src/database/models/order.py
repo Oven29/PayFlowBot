@@ -43,6 +43,11 @@ class Order(Model):
             res += f'<b>Оператор:</b> {self.operator.title}\n'
         if self.provider and role in (UserRole.OWNER, UserRole.ADMIN):
             res += f'<b>Провайдер:</b> {self.provider.title}\n'
+        if self.taking_date:
+            res += f'<b>Дата взятия:</b> {self.taking_date} (через {self.taking_date - self.created_date})\n'
+        if self.close_date:
+            res += f'<b>Дата закрытия:</b> {self.close_date} (через {self.created_date - self.created_date} ' \
+                'с момента добавления заявки)\n'
         if self.checks:
             res += '\n\n<b>Чеки:</b>\n' + '\n'.join(f'<code>{el.amount}</code> - {el.url}' for el in self.checks)
         if self.cancel_reason:
