@@ -69,6 +69,14 @@ async def provider_menu(event: Message | CallbackQuery, state: FSMContext) -> No
 
         if user.provider_status is UserProviderStatus.BUSY:
             order = await db.order.get_current(provider_id=event.from_user.id)
+            if order is None:
+                await state.clear()
+                await db.user.update(
+                    user=user,
+                    provider_status=UserProviderStatus.INACTIVE,
+                )
+                return await provider_menu(event, state)
+
             await EditMessage(event)(
                 text=order.get_message(UserRole.PROVIDER),
                 reply_markup=finish_order(order.id),
