@@ -22,6 +22,8 @@ class Order(Model):
     provider: Optional[User] = ForeignKey(User, nullable=True, ondelete='CASCADE', related_name='provider_orders')
     cancel_reason: Optional[str] = Text(nullable=True)
     dispute_reason: Optional[str] = Text(nullable=True)
+    taking_date: Optional[datetime] = DateTime(nullable=True)
+    close_date: Optional[datetime] = DateTime(nullable=True)
 
     @pydantic.computed_field()
     def title(self) -> str:
