@@ -12,7 +12,7 @@ from src.filters.role import ProviderFilter
 from src.keyboards import provider as kb
 from src.states.provider import RejectOrderState, DisputeOrderState, ConfirmOrderState
 from src.utils.check.tink import TinkCheck, BaseCheckException
-from src.utils.distribute_order import go_on_shift
+from src.utils.distribute_order import distribute_order, go_on_shift
 from src.utils.edit_message import EditMessage
 from src.utils.scheduler import remove_job_by_name_pattern
 
@@ -54,17 +54,38 @@ async def reject_order_reason(message: Message, state: FSMContext, bot: Bot) -> 
         order_id=state_data['order_id'],
     )
 
+    await bot.send_message(
+        chat_id=config.REJECT_ORDER_CHAT_ID,
+        text=f'Заявка <b>{order.title}</b> отклонена провайдером {user.title}',
+    )
+
+    rejects = await db.order.get_reject_orders(order)
+
+    if len(rejects) == 3:
+        text = f'Заказ <b>{order.title}</b> отменён из-за того, что провайдеры не приняли его много раз\n\n' \
+            f'Причины отказов провайдеров:\n\n{"\n\n".join(el.reason for el in rejects)}'
+        await bot.send_message(
+            chat_id=config.ORDER_CHAT_ID,
+            text=text,
+        )
+        await bot.send_message(
+            chat_id=order.operator.user_id,
+            text=text,
+        )
+        await db.order.update(
+            order=order,
+            status=OrderStatus.CANCELLED,
+        )
+
+    else:
+        await distribute_order(order)
+
     await EditMessage(message)(
         text=f'Заявка <b>{order.title}</b> отклонена\n'
             f'Сессия продолжается, банк: <b>{provider_status_to_text[status]}</b>',
         reply_markup=kb.in_menu,
     )
     await go_on_shift(user)
-
-    await bot.send_message(
-        chat_id=config.REJECT_ORDER_CHAT_ID,
-        text=f'Заявка <b>{order.title}</b> отклонена провайдером {user.title}',
-    )
 
 
 @router.callback_query(F.data.startswith('accept-order'))
@@ -74,6 +95,7 @@ async def accept_order(call: CallbackQuery, state: FSMContext) -> None:
     order = await db.order.update(
         order_id=int(order_id),
         provider=user,
+        taking_date=datetime.now(),
     )
     await state.update_data(order_id=order.id)
     remove_job_by_name_pattern(f'*{call.from_user.id}')

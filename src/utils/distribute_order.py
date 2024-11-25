@@ -39,7 +39,7 @@ async def reject_order(
         )
         await bot.send_message(
             chat_id=config.REJECT_ORDER_CHAT_ID,
-            text=f'Провайдер {provider.title} не принял заявку <b>{order.title}</b> и был отключён.'
+            text=f'Провайдер {provider.title} не принял заявку <b>{order.title}</b> и был отключен.'
                 'Заявка передана другому провайдеру',
         )
 
@@ -83,7 +83,6 @@ async def distribute(
     await db.order.update(
         order=order,
         status=OrderStatus.PROCESSING,
-        taking_date=datetime.now()
     )
 
     scheduler.add_job(
@@ -108,8 +107,11 @@ async def distribute_order(
     order: db.order.Order,
 ) -> None:
     """Distribute order to provider if exists free providers"""
+    rejects = await db.order.get_reject_orders(order)
+
     free_providers = await db.user.select(
         provider_status=order_bank_to_provider_status[order.bank],
+        user_id__not_in=[el.provider.user_id for el in rejects],
     )
     if not len(free_providers):
         return
@@ -131,8 +133,11 @@ async def go_on_shift(
             )
         return
 
+    rejects = await db.order.get_reject_orders(order)
+
     free_orders = await db.order.select(
         status=OrderStatus.CREATED,
+        id__not_in=[el.order.id for el in rejects],
     )
     if not len(free_orders):
         return

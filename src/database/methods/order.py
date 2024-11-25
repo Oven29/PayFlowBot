@@ -233,3 +233,27 @@ async def get_current(
         return await Order.objects.select_related([
             Order.operator, Order.provider, 'checks',
         ]).filter(**filters).get_or_none()
+
+
+async def get_reject_orders(
+    order: Optional[Order] = None,
+    provider: Optional[User] = None,
+) -> List[RejectOrder]:
+    """Get reject users
+
+    Args:
+        order (Optional[Order], optional): Order. Defaults to None.
+        provider (Optional[User], optional): Provider. Defaults to None.
+
+    Returns:
+        List[RejectOrder]: List of element RejectUsers
+    """
+    filters = {}
+    if order:
+        filters['order'] = order
+    if provider:
+        filters['provider'] = provider
+
+    logger.info(f'Get reject orders: {order.id=}')
+    async with base_config.database:
+        return await RejectOrder.objects.select_related('provider').filter(**filters).all()
