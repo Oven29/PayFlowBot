@@ -1,3 +1,4 @@
+from datetime import datetime
 import logging
 from aiogram import Bot, F, Router
 from aiogram.types import Message, CallbackQuery
@@ -93,7 +94,7 @@ async def finish_order(call: CallbackQuery, state: FSMContext) -> None:
 
 
 @router.message(F.text, ConfirmOrderState.check)
-async def get_check(message: Message, state: FSMContext, bot: Bot) -> None:
+async def finish_order(message: Message, state: FSMContext, bot: Bot) -> None:
     state_data = await state.get_data()
     if 'order_id' in state_data:
         order = await db.order.get(
@@ -164,6 +165,7 @@ async def get_check(message: Message, state: FSMContext, bot: Bot) -> None:
     await db.order.update(
         order=order,
         status=OrderStatus.COMPLETED,
+        close_date=datetime.now(),
     )
     logger.info(f'Updating provider balance {order.provider.user_id}: {order.provider.balance=}, '
         f'{order.provider.commissions}, {order.id=}')

@@ -83,6 +83,7 @@ async def distribute(
     await db.order.update(
         order=order,
         status=OrderStatus.PROCESSING,
+        taking_date=datetime.now()
     )
 
     scheduler.add_job(
