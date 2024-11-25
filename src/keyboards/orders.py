@@ -48,6 +48,7 @@ def order_el(order_id: int, status: OrderStatus, role: UserRole) -> InlineKeyboa
 
 def edit_order(order_id: int) -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text='Номер заявки', callback_data=f'edit-uid-order {order_id}')],
         [InlineKeyboardButton(text='Сумму заявки', callback_data=f'edit-amount-order {order_id}')],
         [InlineKeyboardButton(text='Карту', callback_data=f'edit-card-order {order_id}')],
         [InlineKeyboardButton(text='🔙 Назад', callback_data=f'order-menu {order_id}')],

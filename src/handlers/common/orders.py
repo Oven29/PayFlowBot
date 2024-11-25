@@ -13,7 +13,7 @@ from src.filters.role import RoleFilter
 from src.filters.common import AmountFilter, card_filter
 from src.utils.edit_message import EditMessage
 from src.utils.other import generate_rand_string
-from src.states.admin import EditOrderState
+from src.states.common import EditOrderState
 
 
 router = Router(name=__name__)
@@ -184,13 +184,13 @@ async def edit_order_amount(call: CallbackQuery, state: FSMContext) -> None:
 async def set_order_amount(message: Message, state: FSMContext, value: float) -> None:
     data = await state.get_data()
     await state.clear()
-    await db.order.update(
+    order = await db.order.update(
         order_id=data['order_id'],
         amount=value,
     )
 
     await message.answer(
-        text=f'Сумма заявки <b>{data["order_id"]}</b> изменена на <code>{value}</code>',
+        text=f'Сумма заявки <b>{order.title}</b> изменена на <code>{value}</code>',
         reply_markup=kb.in_menu,
     )
 
@@ -214,12 +214,42 @@ async def edit_order_card(call: CallbackQuery, state: FSMContext) -> None:
 async def set_order_card(message: Message, state: FSMContext) -> None:
     data = await state.get_data()
     await state.clear()
-    await db.order.update(
+    order = await db.order.update(
         order_id=data['order_id'],
         card=message.text,
     )
 
     await message.answer(
-        text=f'Реквезиты заявки <b>{data["order_id"]}</b> изменена на <code>{message.text}</code>',
+        text=f'Реквезиты заявки <b>{order.title}</b> изменены на <code>{message.text}</code>',
+        reply_markup=kb.in_menu,
+    )
+
+
+@router.callback_query(F.data.startswith('edit-uid-order'))
+async def edit_order_uid(call: CallbackQuery, state: FSMContext) -> None:
+    user = await db.user.get(user_id=call.from_user.id)
+
+    _, order_id = call.data.split()
+    order = await db.order.get(order_id=int(order_id))
+    await state.set_state(EditOrderState.uid)
+    await state.update_data(order_id=order.id)
+
+    await EditMessage(call)(
+        text=f'{order.get_message(user.role)}\n\n<b>Изменение номера заявки</b>\n<i>Укажите новый номер</i>',
+        reply_markup=kb.cancel,
+    )
+
+
+@router.message(EditOrderState.uid, F.text)
+async def set_order_uid(message: Message, state: FSMContext) -> None:
+    data = await state.get_data()
+    await state.clear()
+    order = await db.order.update(
+        order_id=data['order_id'],
+        uid=message.text,
+    )
+
+    await message.answer(
+        text=f'Номер заявки <b>{order.title}</b> изменен на <code>{message.text}</code>',
         reply_markup=kb.in_menu,
     )
