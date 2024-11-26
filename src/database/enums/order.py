@@ -3,7 +3,6 @@ from enum import Enum
 
 class OrderBank(str, Enum):
     TINK = 'TINK'
-    TINK_SBP = 'TINK_SBP'
     INTER = 'INTER'
 
 

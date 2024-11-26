@@ -23,7 +23,6 @@ order_status_to_text = {
 
 order_bank_to_text = {
     OrderBank.TINK: 'Тинькофф',
-    OrderBank.TINK_SBP: 'Тинькофф СБП',
     OrderBank.INTER: 'Межбанк',
 }
 
@@ -45,6 +44,5 @@ provider_status_to_text = {
 
 order_bank_to_provider_status = {
     OrderBank.TINK: UserProviderStatus.ACTIVE_TINK,
-    OrderBank.TINK_SBP: UserProviderStatus.ACTIVE_TINK,
     OrderBank.INTER: UserProviderStatus.ACTIVE_INTER,
 }

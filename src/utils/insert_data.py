@@ -52,7 +52,7 @@ test_orders = [
     {
         "id": 1,
         "amount": 1200.50,
-        "bank": OrderBank.TINK_SBP,
+        "bank": OrderBank.TINK,
         "card": "1234567812345678",
         "created_date": datetime(2023, 8, 15),
         "status": OrderStatus.CREATED,

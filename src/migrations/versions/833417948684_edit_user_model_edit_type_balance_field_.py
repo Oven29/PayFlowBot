@@ -9,7 +9,8 @@ from typing import Sequence, Union
 
 from alembic import op
 import sqlalchemy as sa
-from sqlalchemy.dialects import sqlite
+
+from src.migrations.utils import is_sqlite
 
 
 # revision identifiers, used by Alembic.
@@ -21,7 +22,7 @@ depends_on: Union[str, Sequence[str], None] = None
 
 def upgrade() -> None:
     # Проверяем, используется ли SQLite
-    if isinstance(op.get_bind().dialect, sqlite.dialect):
+    if is_sqlite():
         # Временная колонка с новым типом данных
         with op.batch_alter_table('checks') as batch_op:
             batch_op.add_column(sa.Column('status_temp', sa.Enum('OK', 'UNDERPAYMENT', 'OVERPAYMENT', 'ERROR', name='checkstatus'), nullable=False))
@@ -44,7 +45,7 @@ def upgrade() -> None:
                         existing_nullable=False)
 
     # Аналогично для изменения типа у `users.balance`
-    if isinstance(op.get_bind().dialect, sqlite.dialect):
+    if is_sqlite():
         with op.batch_alter_table('users') as batch_op:
             batch_op.add_column(sa.Column('balance_temp', sa.Float(), nullable=True))
         op.execute("""
@@ -64,7 +65,7 @@ def upgrade() -> None:
 
 def downgrade() -> None:
     # Обратный процесс для SQLite
-    if isinstance(op.get_bind().dialect, sqlite.dialect):
+    if is_sqlite():
         with op.batch_alter_table('users') as batch_op:
             batch_op.add_column(sa.Column('balance_temp', sa.INTEGER(), nullable=True))
         op.execute("""
