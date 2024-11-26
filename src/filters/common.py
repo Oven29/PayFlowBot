@@ -21,4 +21,4 @@ class AmountFilter(BaseFilter):
         return True
 
 
-card_filter = F.text.regexp(r'^\d{1,16}$')
+card_filter = F.text.regexp(r'^\+?[0-9 ]{5,19}$')
