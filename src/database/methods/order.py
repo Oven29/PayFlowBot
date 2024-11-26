@@ -249,11 +249,13 @@ async def get_reject_orders(
         List[RejectOrder]: List of element RejectUsers
     """
     filters = {}
-    if order:
+    if not order is None:
         filters['order'] = order
-    if provider:
+    if not provider is None:
         filters['provider'] = provider
 
-    logger.info(f'Get reject orders: {order.id=}')
+    logger.info(f'Get reject orders: {filters}')
     async with base_config.database:
-        return await RejectOrder.objects.select_related('provider').filter(**filters).all()
+        return await RejectOrder.objects.select_related([
+            RejectOrder.order, RejectOrder.provider,
+        ]).filter(**filters).all()

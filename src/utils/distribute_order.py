@@ -107,12 +107,14 @@ async def distribute_order(
     order: db.order.Order,
 ) -> None:
     """Distribute order to provider if exists free providers"""
-    rejects = await db.order.get_reject_orders(order)
+    rejects = await db.order.get_reject_orders(order=order)
+    rejects = [el.provider.user_id for el in rejects]
 
     free_providers = await db.user.select(
         provider_status=order_bank_to_provider_status[order.bank],
-        user_id__not_in=[el.provider.user_id for el in rejects],
     )
+    free_providers = [el for el in free_providers if el.user_id not in rejects]
+
     if not len(free_providers):
         return
 
@@ -133,12 +135,14 @@ async def go_on_shift(
             )
         return
 
-    rejects = await db.order.get_reject_orders(order)
+    rejects = await db.order.get_reject_orders(order=order)
+    rejects = [el.order.id for el in rejects]
 
     free_orders = await db.order.select(
         status=OrderStatus.CREATED,
-        id__not_in=[el.order.id for el in rejects],
     )
+    free_orders = [el for el in free_orders if el.id not in rejects]
+
     if not len(free_orders):
         return
 

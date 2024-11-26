@@ -40,7 +40,7 @@ class User(Model):
 
         if self.role in (UserRole.OPERATOR, UserRole.PROVIDER, UserRole.MANAGER):
             res += f'\n<b>Комиссия:</b> {self.commission_message}\n' \
-                f'<b>Текущий баланс:</b> {self.balance}₽'
+                f'<b>Текущий баланс:</b> {round(self.balance or 0, 2)}₽'
 
         orders = getattr(self, f'{self.role.value}_orders', None)
         if not orders:

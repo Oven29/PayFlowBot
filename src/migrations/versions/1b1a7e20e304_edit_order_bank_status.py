@@ -33,7 +33,7 @@ def upgrade() -> None:
         op.execute("UPDATE orders SET bank_temp = bank")
         with op.batch_alter_table("orders") as batch_op:
             batch_op.drop_column("bank")
-            batch_op.add_column(sa.Column("bank", sa.Enum("TINK", "INTER", name="orderbank"), nullable=True))
+            batch_op.add_column(sa.Column("bank", sa.Enum("TINK", "INTER", name="orderbank"), nullable=False, default="TINK"))
             batch_op.drop_column("bank_temp")
     else:
         # For databases with full ALTER support
