@@ -82,7 +82,7 @@ async def update(
         Order: Updated order
     """
     if order is None:
-            order = await get(order_id=order_id)
+        order = await get(order_id=order_id)
 
     logger.info(f'Update order: {order.id=} ({kwargs})')
     async with base_config.database:        

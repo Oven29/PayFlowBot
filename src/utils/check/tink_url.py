@@ -52,7 +52,8 @@ class TinkUrlCheck(BaseCheck):
         if not len(result):
             raise CheckNotFound
 
-        self.valid_date(datetime.strptime(result['operationDateTime'], "%Y-%m-%d %H:%M:%S"))
+        self.date = datetime.strptime(result['operationDateTime'], "%Y-%m-%d %H:%M:%S")
+        self.valid_date()
         self.valid_card(result['operationDstNumber'])
 
         self.amount = float(result['operationAmount'])

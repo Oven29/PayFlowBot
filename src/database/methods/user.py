@@ -119,9 +119,10 @@ async def update(
     Returns:
         User: Updated user
     """
+    if user is None:
+        user = await get(user_id=user_id, user_pk=user_pk)
+
     async with base_config.database:
-        if user is None:
-            user = await get(user_id=user_id, user_pk=user_pk)
         await user.upsert(**kwargs)
     
     return user

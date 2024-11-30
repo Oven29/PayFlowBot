@@ -10,7 +10,10 @@ class EditMessage:
     """
     Support class for edit message text
     """
-    def __init__(self, event: CallbackQuery | Message, send_message: bool = False) -> None:
+    def __init__(
+        self, event: CallbackQuery | Message,
+        send_message: bool = False,
+    ) -> None:
         self.send_message = send_message
         self.bot = event.bot
         self.default_kwds = {'chat_id': event.from_user.id}

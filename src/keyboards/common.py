@@ -36,3 +36,16 @@ def update_order_info(order_id: int) -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(inline_keyboard=[
         [InlineKeyboardButton(text='🔁 Обновить информацию', callback_data=f'update-order-info {order_id}')],
     ])
+
+
+def accept_check(check_id: int) -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text='✅ Подтвердить', callback_data=f'accept-check {check_id}')],
+        [InlineKeyboardButton(text='✖️ Отклонить', callback_data=f'reject-check {check_id}')],
+    ])
+
+
+def save_check(check_id: int) -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text='✅ Сохранить', callback_data=f'save-check {check_id}')],
+    ])

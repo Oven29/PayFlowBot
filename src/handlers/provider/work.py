@@ -1,5 +1,6 @@
 from datetime import datetime
 import logging
+from typing import Any, Dict
 from aiogram import Bot, F, Router
 from aiogram.types import Message, CallbackQuery
 from aiogram.fsm.context import FSMContext
@@ -10,9 +11,7 @@ from src.database.enums import UserProviderStatus, CheckStatus, CheckType, Order
 from src.filters.role import ProviderFilter
 from src.keyboards import provider as kb
 from src.states.provider import RejectOrderState, DisputeOrderState, ConfirmOrderState
-from src.utils.check.tink_pdf import TinkPdfCheck
-from src.utils.check.tink_url import TinkUrlCheck
-from src.utils.check.exceptions import BaseCheckException
+from src.utils.check import TinkPdfCheck, TinkUrlCheck, BaseCheck, BaseCheckException
 from src.utils.distribute_order import distribute_order, go_on_shift
 from src.utils.edit_message import EditMessage
 from src.utils.scheduler import remove_job_by_name_pattern
@@ -118,7 +117,7 @@ async def wait_check(call: CallbackQuery, state: FSMContext) -> None:
 
 @router.message(ConfirmOrderState.check, F.text)
 @router.message(ConfirmOrderState.check, F.document.mime_type == 'application/pdf')
-async def finish_order(message: Message, state: FSMContext, bot: Bot) -> None:
+async def get_check(message: Message, state: FSMContext, bot: Bot) -> None:
     state_data = await state.get_data()
 
     if 'order_id' in state_data:
@@ -127,6 +126,7 @@ async def finish_order(message: Message, state: FSMContext, bot: Bot) -> None:
         )
     else:
         order = await db.order.get_current(provider_id=message.from_user.id)
+        await state.update_data(order_id=order.id)
 
     if message.text:
         check_type = CheckType.URL
@@ -142,8 +142,10 @@ async def finish_order(message: Message, state: FSMContext, bot: Bot) -> None:
 
     try:
         await check.valid()
+
     except BaseCheckException as e:
         await db.check.create(
+            date=check.date,
             amount=check.amount,
             status=CheckStatus.ERROR,
             url=check.url,
@@ -155,11 +157,59 @@ async def finish_order(message: Message, state: FSMContext, bot: Bot) -> None:
                 f'скиньте чек ещё раз</b>\n\n<i>{e.message}</i>',
         )
 
+    if check_type is CheckType.PDF:
+        db_check = await db.check.create(
+            date=check.date,
+            amount=check.amount,
+            status=CheckStatus.WAIT,
+            url=check.url,
+            order=order,
+            type=check_type,
+        )
+        await bot.send_message(
+            chat_id=config.CHECK_CHAT_ID,
+            text=f'Чек на <i>{check.amount}₽</i> по заявке <b>{order.title}</b>\n'
+                f'Провайдер: {order.provider.title}\nОператор: {order.operator.title}',
+            reply_markup=kb.accept_check(db_check.id),
+        )
+        return await message.answer(
+            text='Чек отправлен на проверку администрации, можете скинуть ещё чеки, сумма текущего меньше суммы заявки',
+        )
+
+    await finish_order(message, state, bot, state_data, check_type, check, order)
+
+
+@router.callback_query(F.data.startswith('save-check'))
+async def save_check(call: CallbackQuery, state: FSMContext, bot: Bot) -> None:
+    _, check_id = call.data.split()
+    db_check = await db.check.get_by_id(check_id=check_id)
+
+    check = BaseCheck(
+        url=db_check.url,
+        order=db_check.order,
+        date=db_check.date,
+        amount=db_check.amount,
+    )
+    await db.check.delete(check_id=db_check.id)
+
+    await finish_order(call.message, state, bot, (await state.get_data()), CheckType.PDF, check, db_check.order)
+
+
+async def finish_order(
+    message: Message,
+    state: FSMContext,
+    bot: Bot,
+    state_data: Dict[str, Any],
+    check_type: CheckType,
+    check: BaseCheck,
+    order: db.order.Order,
+) -> None:
     current_amount = state_data.get('current_amount', 0) + check.amount
 
     if current_amount < order.amount:
         await state.update_data(current_amount=current_amount)
         await db.check.create(
+            date=check.date,
             amount=check.amount,
             status=CheckStatus.UNDERPAYMENT,
             url=check.url,
@@ -189,6 +239,7 @@ async def finish_order(message: Message, state: FSMContext, bot: Bot) -> None:
 
     await state.clear()
     await db.check.create(
+        date=check.date,
         amount=check.amount,
         status=check_status,
         url=check.url,

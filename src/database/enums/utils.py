@@ -1,7 +1,6 @@
 from .user import UserRole, UserProviderStatus
 from .token import AccessType
 from .order import OrderBank, OrderStatus
-from .check import CheckStatus
 
 
 access_type_to_user_role = {

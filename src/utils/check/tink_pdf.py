@@ -43,8 +43,8 @@ class TinkPdfCheck(BaseCheck):
             raise CheckNotFound
 
         # Conversion to datetime
-        datetime_obj = datetime.strptime(f"{date_time_match.group(1)} {date_time_match.group(2)}", "%d.%m.%Y %H:%M:%S")
-        self.valid_date(datetime_obj)
+        self.date = datetime.strptime(f"{date_time_match.group(1)} {date_time_match.group(2)}", "%d.%m.%Y %H:%M:%S")
+        self.valid_date()
 
         # Extraction of card number
         card_match = re.search(card_number_pattern, text)

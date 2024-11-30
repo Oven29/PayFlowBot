@@ -2,6 +2,8 @@ from enum import Enum
 
 
 class CheckStatus(str, Enum):
+    WAIT = 'WAIT'
+    REJECT = 'REJECT'
     OK = 'OK'
     UNDERPAYMENT = 'UNDERKPAYMENT'
     OVERPAYMENT = 'OVERPAYMENT'
