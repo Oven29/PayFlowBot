@@ -6,12 +6,13 @@ from aiogram.fsm.context import FSMContext
 
 from src import config
 from src.database import db
-from src.database.enums import UserProviderStatus, CheckStatus, provider_status_to_text, order_bank_to_text
-from src.database.enums.order import OrderStatus
+from src.database.enums import UserProviderStatus, CheckStatus, CheckType, OrderStatus, provider_status_to_text
 from src.filters.role import ProviderFilter
 from src.keyboards import provider as kb
 from src.states.provider import RejectOrderState, DisputeOrderState, ConfirmOrderState
-from src.utils.check.tink import TinkCheck, BaseCheckException
+from src.utils.check.tink_pdf import TinkPdfCheck
+from src.utils.check.tink_url import TinkUrlCheck
+from src.utils.check.exceptions import BaseCheckException
 from src.utils.distribute_order import distribute_order, go_on_shift
 from src.utils.edit_message import EditMessage
 from src.utils.scheduler import remove_job_by_name_pattern
@@ -107,17 +108,19 @@ async def accept_order(call: CallbackQuery, state: FSMContext) -> None:
 
 
 @router.callback_query(F.data.startswith('finish-order'))
-async def finish_order(call: CallbackQuery, state: FSMContext) -> None:
+async def wait_check(call: CallbackQuery, state: FSMContext) -> None:
     await state.set_state(ConfirmOrderState.check)
 
     await EditMessage(call)(
-        text=f'{call.message.html_text}\n\n<b>Пришлите ссылку на чек</b>',
+        text=f'{call.message.html_text}\n\n<b>Пришлите ссылку на чек или отправьте его PDF файлом</b>',
     )
 
 
-@router.message(F.text, ConfirmOrderState.check)
+@router.message(ConfirmOrderState.check, F.text)
+@router.message(ConfirmOrderState.check, F.document.mime_type == 'application/pdf')
 async def finish_order(message: Message, state: FSMContext, bot: Bot) -> None:
     state_data = await state.get_data()
+
     if 'order_id' in state_data:
         order = await db.order.get(
             order_id=state_data['order_id'],
@@ -125,7 +128,17 @@ async def finish_order(message: Message, state: FSMContext, bot: Bot) -> None:
     else:
         order = await db.order.get_current(provider_id=message.from_user.id)
 
-    check = TinkCheck(message.text, order.card)
+    if message.text:
+        check_type = CheckType.URL
+        check = TinkUrlCheck(message.text, order)
+    else:
+        check_type = CheckType.PDF
+        check = TinkPdfCheck(message.document.file_id, order)
+
+    if await db.check.check_exists_by_url(check.url):
+        return await message.answer(
+            text=f'Чек <i>{check.url}</i> уже был принят',
+        )
 
     try:
         await check.valid()
@@ -135,15 +148,11 @@ async def finish_order(message: Message, state: FSMContext, bot: Bot) -> None:
             status=CheckStatus.ERROR,
             url=check.url,
             order=order,
+            type=check_type,
         )
         return await message.answer(
             text='<b>Чек не прошел проверку, пожалуйста проверьте реквезиты и '
                 f'скиньте чек ещё раз</b>\n\n<i>{e.message}</i>',
-        )
-
-    if await db.check.check_exists_by_url(check.url):
-        return await message.answer(
-            text=f'Чек <i>{check.url}</i> уже был принят',
         )
 
     current_amount = state_data.get('current_amount', 0) + check.amount
@@ -155,6 +164,7 @@ async def finish_order(message: Message, state: FSMContext, bot: Bot) -> None:
             status=CheckStatus.UNDERPAYMENT,
             url=check.url,
             order=order,
+            type=check_type,
         )
         return await message.answer(
             text=f'<b>Сумма чека меньше суммы заявки</b>\n\n'
@@ -183,6 +193,7 @@ async def finish_order(message: Message, state: FSMContext, bot: Bot) -> None:
         status=check_status,
         url=check.url,
         order=order,
+        type=check_type,
     )
     await db.order.update(
         order=order,

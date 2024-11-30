@@ -1,5 +1,5 @@
 import aiohttp
-from datetime import datetime, timedelta
+from datetime import datetime
 import logging
 import re
 
@@ -11,7 +11,7 @@ from src.utils.other import get_user_agent
 logger = logging.getLogger(__name__)
 
 
-class TinkCheck(BaseCheck):
+class TinkUrlCheck(BaseCheck):
     async def valid(self) -> None:
         if re.match(r'^(https?://)?link\.tbank\.ru/[A-Za-z0-9]{8,16}$', self.url) is None:
             raise InvalidCheckUrl
@@ -52,12 +52,7 @@ class TinkCheck(BaseCheck):
         if not len(result):
             raise CheckNotFound
 
+        self.valid_date(datetime.strptime(result['operationDateTime'], "%Y-%m-%d %H:%M:%S"))
+        self.valid_card(result['operationDstNumber'])
+
         self.amount = float(result['operationAmount'])
-
-        # opearation_datetime = datetime.strptime(result['operationDateTime'], "%Y-%m-%d %H:%M:%S")
-        # if datetime.now() - opearation_datetime > timedelta(days=3):
-        #     raise InvalidCheckDate
-
-        if not (result['operationDstNumber'][:6] == self.card[:6] and \
-                 result['operationDstNumber'][-4:] == self.card[-4:]):
-            raise InvalidCheckCard

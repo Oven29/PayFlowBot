@@ -2,7 +2,7 @@ from typing import Optional
 
 from .order import get as get_order
 from ..connect import base_config
-from ..enums import CheckStatus
+from ..enums import CheckStatus, CheckType
 from ..models.check import Check
 
 
@@ -25,6 +25,7 @@ async def create(
     amount: float,
     status: CheckStatus,
     url: str,
+    type: Optional[CheckType] = None,
     order: Optional[Check] = None,
     order_id: Optional[int] = None,
 ) -> Check:
@@ -34,6 +35,7 @@ async def create(
         amount (float): Check amount
         status (CheckStatus): Check status
         url (str): Check URL
+        type (Optional[CheckType], optional): Check type. Defaults to None.
         order (Optional[Check], optional): Check. Defaults to None.
         order_id (Optional[int], optional): Order ID. Defaults to None.
 
@@ -47,6 +49,7 @@ async def create(
         return await Check.objects.create(
             amount=amount,
             url=url,
+            type=type,
             order=order,
             status=status,
         )

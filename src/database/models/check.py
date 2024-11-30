@@ -5,7 +5,7 @@ import pydantic
 
 from .order import Order
 from ..connect import base_config
-from ..enums import CheckStatus, OrderBank
+from ..enums import CheckStatus, CheckType, OrderBank
 
 
 class Check(Model):
@@ -17,6 +17,7 @@ class Check(Model):
     order: Order = ForeignKey(Order, ondelete='CASCADE')
     status: CheckStatus = Enum(enum_class=CheckStatus)
     url: str = String(max_length=512, nullable=False)
+    type: CheckType = Enum(enum_class=CheckType, nullable=True)
 
     @pydantic.computed_field()
     def bank(self) -> Optional[OrderBank]:

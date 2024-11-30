@@ -22,9 +22,9 @@ class InvalidCheckRecipient(BaseCheckException):
     message = 'Некорректные данные получателя'
 
 
-# class InvalidCheckDate(BaseCheckException):
-#     """Invalid check date"""
-#     message = 'Некорректное время пополнения'
+class InvalidCheckDate(BaseCheckException):
+    """Invalid check date"""
+    message = 'Некорректное время пополнения'
 
 
 class UnknownCheckError(BaseCheckException):
