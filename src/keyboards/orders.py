@@ -17,7 +17,7 @@ orders_menu = InlineKeyboardMarkup(inline_keyboard=[
 def order_el(order_id: int, status: OrderStatus, role: UserRole) -> InlineKeyboardMarkup:
     keyboard = []
 
-    if status is OrderStatus.CANCELLED:
+    if status in (OrderStatus.CANCELLED, OrderStatus.DISPUTE):
         keyboard.append([InlineKeyboardButton(
             text='Перенести в новые',
             callback_data=f'move-order created {order_id}',
