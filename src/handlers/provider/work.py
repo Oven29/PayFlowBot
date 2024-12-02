@@ -185,6 +185,10 @@ async def save_check(call: CallbackQuery, state: FSMContext, bot: Bot) -> None:
     _, check_id = call.data.split()
     db_check = await db.check.get_by_id(check_id=check_id)
 
+    await call.message.edit_reply_markup(
+        reply_markup=None,
+    )
+
     check = TinkPdfCheck(
         url=db_check.url,
         order=db_check.order,
@@ -205,10 +209,10 @@ async def finish_order(
     check: BaseCheck,
     order: db.order.Order,
 ) -> None:
-    current_amount = state_data.get('current_amount', 0) + check.amount
+    checks = await db.check.get_by_order(order_id=order.id)
+    current_amount = sum(el.amount for el in checks) + check.amount
 
     if current_amount < order.amount:
-        await state.update_data(current_amount=current_amount)
         await db.check.create(
             date=check.date,
             amount=check.amount,
@@ -219,9 +223,9 @@ async def finish_order(
         )
         return await message.answer(
             text=f'<b>Сумма чека меньше суммы заявки</b>\n\n'
-                f'<b>Сумма чека:</b> {check.amount}\n'
-                f'<b>Сумма заявки:</b> {order.amount}\n'
-                f'Доплатите {order.amount - check.amount} и пришлите чек',
+                f'<b>Сумма чека:</b> {check.amount}₽\n'
+                f'<b>Сумма заявки:</b> {order.amount}₽\n'
+                f'Доплатите <i>{order.amount - current_amount}₽</i> и пришлите чек',
         )
 
     note = ''
@@ -292,7 +296,7 @@ async def finish_order(
     )
 
     provider_invite_link = await db.token.get_by_user(user=provider)
-    if (manager := provider_invite_link.manager):
+    if not provider_invite_link is None and (manager := provider_invite_link.manager):
         logger.info(f'Updating manager balance {manager.user_id}: {manager.balance=}, '
             f'{manager.commissions}, {order.id=}')
         await db.user.update(
@@ -301,7 +305,7 @@ async def finish_order(
         )
 
     operator_invite_link = await db.token.get_by_user(user=order.operator)
-    if (manager := operator_invite_link.manager):
+    if not operator_invite_link is None and (manager := operator_invite_link.manager):
         logger.info(f'Updating manager balance {manager.user_id}: {manager.balance=}, '
             f'{manager.commissions}, {order.id=}')
         await db.user.update(

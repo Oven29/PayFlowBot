@@ -49,7 +49,10 @@ class Order(Model):
             res += f'<b>Дата закрытия:</b> {self.close_date} (через {self.created_date - self.created_date} ' \
                 'с момента добавления заявки)\n'
         if self.checks:
-            res += '\n\n<b>Чеки:</b>\n' + '\n'.join(f'<code>{el.amount}</code> - {el.url}' for el in self.checks)
+            res += '\n\n<b>Чеки:</b>\n' + '\n'.join(f'<code>{el.amount}₽</code> - {el.url}' for el in self.checks)
+            current_amouns = sum(el.amount for el in self.checks)
+            if self.amount > current_amouns:
+                res += f'\n\n<b>Осталось доплатить</b> - <code>{self.amount - current_amouns}₽</code>'
         if self.cancel_reason:
             res += f'\n\n<b>Причина отмены:</b> <i>{self.cancel_reason}</i>'
         if self.dispute_reason:
