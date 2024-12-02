@@ -166,9 +166,10 @@ async def get_check(message: Message, state: FSMContext, bot: Bot) -> None:
             order=order,
             type=check_type,
         )
-        await bot.send_message(
+        await bot.send_document(
             chat_id=config.CHECK_CHAT_ID,
-            text=f'Чек на <i>{check.amount}₽</i> по заявке <b>{order.title}</b>\n'
+            document=message.document.file_id,
+            caption=f'Чек на <i>{check.amount}₽</i> по заявке <b>{order.title}</b>\n'
                 f'Провайдер: {order.provider.title}\nОператор: {order.operator.title}',
             reply_markup=kb.accept_check(db_check.id),
         )
