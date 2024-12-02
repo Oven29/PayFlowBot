@@ -260,7 +260,7 @@ async def finish_order(
         f'{order.provider.commissions}, {order.id=}')
     provider = await db.user.update(
         user=order.provider,
-        provider_status=UserProviderStatus(state_data.get('status', UserProviderStatus.INACTIVE.value)),
+        provider_status=UserProviderStatus(state_data.get('status', UserProviderStatus.ACTIVE_TINK.value)),
         balance=order.provider.calculate_balance(order.amount, order.bank),
     )
     provider_orders = await db.order.get_user_orders(provider_id=message.from_user.id)
