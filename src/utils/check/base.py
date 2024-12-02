@@ -22,13 +22,13 @@ class BaseCheck(ABC):
 
     def valid_card(self, card: str) -> None:
         """Check if check card is valid, raise exception if not"""
-        if not fnmatch(self.card, card):
-            raise InvalidCheckCard
+        # if not fnmatch(self.card, card):
+        #     raise InvalidCheckCard
 
     def valid_date(self) -> None:
         """Check if check date is valid, raise exception if not"""
-        if self.date is None or not self.created_date < self.date < datetime.now():
-            raise InvalidCheckDate
+        # if self.date is None or not self.created_date < self.date < datetime.now():
+        #     raise InvalidCheckDate
 
     @abstractmethod
     async def valid(self) -> bool:

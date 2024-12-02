@@ -86,7 +86,9 @@ async def get_by_id(
         Optional[Check]: Check
     """
     async with base_config.database:
-        return await Check.objects.get_or_none(id=check_id)
+        return await Check.objects.select_related([
+            Check.order, Check.order.provider,
+        ]).filter(id=check_id).first()
 
 
 async def update(

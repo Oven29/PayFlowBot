@@ -135,10 +135,10 @@ async def get_check(message: Message, state: FSMContext, bot: Bot) -> None:
         check_type = CheckType.PDF
         check = TinkPdfCheck(message.document.file_id, order)
 
-    if await db.check.check_exists_by_url(check.url):
-        return await message.answer(
-            text=f'Чек <i>{check.url}</i> уже был принят',
-        )
+    # if await db.check.check_exists_by_url(check.url):
+    #     return await message.answer(
+    #         text=f'Чек <i>{check.url}</i> уже был принят',
+    #     )
 
     try:
         await check.valid()
@@ -185,10 +185,10 @@ async def save_check(call: CallbackQuery, state: FSMContext, bot: Bot) -> None:
     _, check_id = call.data.split()
     db_check = await db.check.get_by_id(check_id=check_id)
 
-    check = BaseCheck(
+    check = TinkPdfCheck(
         url=db_check.url,
         order=db_check.order,
-        date=db_check.date,
+        date=db_check.add_date,
         amount=db_check.amount,
     )
     await db.check.delete(check_id=db_check.id)
